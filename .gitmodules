@@ -1,0 +1,15 @@
+[submodule "rmw"]
+	path = rmw
+	url = https://github.com/ros2/rmw.git
+[submodule "rcl"]
+	path = rcl
+	url = https://github.com/ros2/rcl.git
+[submodule "rclc"]
+	path = rclc
+	url = https://github.com/ros2/rclc
+[submodule "rclcpp"]
+	path = rclcpp
+	url = https://github.com/ros2/rclcpp.git
+[submodule "RIOT"]
+	path = RIOT
+	url = https://github.com/RIOT-OS/RIOT.git
