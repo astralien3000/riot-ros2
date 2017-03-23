@@ -13,3 +13,9 @@
 [submodule "RIOT"]
 	path = RIOT
 	url = https://github.com/RIOT-OS/RIOT.git
+[submodule "rosidl"]
+	path = rosidl
+	url = https://github.com/ros2/rosidl.git
+[submodule "rcl_interfaces"]
+	path = rcl_interfaces
+	url = https://github.com/ros2/rcl_interfaces.git
