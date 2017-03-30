@@ -1,6 +1,6 @@
 MODULE = ros2
 
-DIRS += $(CURDIR)/modules/rclcpp
-DIRS += $(CURDIR)/modules/rcl
+DIRS += $(CURDIR)/src/rclcpp
+DIRS += $(CURDIR)/src/rcl
 
 include $(RIOTBASE)/Makefile.base
