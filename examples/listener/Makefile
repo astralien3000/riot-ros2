@@ -9,5 +9,7 @@ QUIET ?= 0
 
 EXTERNAL_MODULE_DIRS += $(ROS2BASE)
 
+USEMODULE += rclcpp rcl
+
 include $(ROS2BASE)/Makefile.include
 include $(RIOTBASE)/Makefile.include
