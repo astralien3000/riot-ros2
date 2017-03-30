@@ -9,7 +9,11 @@ QUIET ?= 0
 
 EXTERNAL_MODULE_DIRS += $(ROS2BASE)
 
-USEMODULE += rclcpp rcl rmw rmw_fake
+USEMODULE += rclcpp rcl
+USEMODULE += rmw rmw_fake
+USEMODULE += rosidl_generator_c
+USEMODULE += rosidl_typesupport_introspection_cpp
+USEMODULE += rosidl_typesupport_cpp
 
 include $(ROS2BASE)/Makefile.include
 include $(RIOTBASE)/Makefile.include
