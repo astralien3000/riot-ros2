@@ -2,6 +2,7 @@
 #include "rmw/rmw.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 const char *
 rmw_get_implementation_identifier(void)
@@ -23,7 +24,11 @@ rmw_create_node(const char * name, size_t domain_id)
   (void) name;
   (void) domain_id;
   puts("rmw_create_node");
-  return NULL;
+  rmw_node_t *node = malloc(sizeof(rmw_node_t));
+  node->implementation_identifier = "fake";
+  node->data = NULL;
+  node->name = name;
+  return node;
 }
 
 rmw_ret_t
@@ -39,7 +44,10 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
   (void) node;
   puts("rmw_node_get_graph_guard_condition");
-  return NULL;
+  rmw_guard_condition_t * ret = malloc(sizeof(rmw_guard_condition_t));
+  ret->data = NULL;
+  ret->implementation_identifier = "fake";
+  return ret;
 }
 
 rmw_publisher_t *
@@ -234,7 +242,10 @@ rmw_guard_condition_t *
 rmw_create_guard_condition(void)
 {
   puts("rmw_create_guard_condition");
-  return NULL;
+  rmw_guard_condition_t * ret = malloc(sizeof(rmw_guard_condition_t));
+  ret->data = NULL;
+  ret->implementation_identifier = "fake";
+  return ret;
 }
 
 rmw_ret_t
@@ -242,6 +253,7 @@ rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
 {
   (void) guard_condition;
   puts("rmw_destroy_guard_condition");
+  free(guard_condition);
   return RMW_RET_OK;
 }
 
