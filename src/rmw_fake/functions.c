@@ -1,15 +1,19 @@
 #include "rmw/error_handling.h"
 #include "rmw/rmw.h"
 
+#include <stdio.h>
+
 const char *
 rmw_get_implementation_identifier(void)
 {
+  puts("rmw_get_implementation_identifier");
   return NULL;
 }
 
 rmw_ret_t
 rmw_init(void)
 {
+  puts("rmw_init");
   return RMW_RET_OK;
 }
 
@@ -18,6 +22,7 @@ rmw_create_node(const char * name, size_t domain_id)
 {
   (void) name;
   (void) domain_id;
+  puts("rmw_create_node");
   return NULL;
 }
 
@@ -25,6 +30,7 @@ rmw_ret_t
 rmw_destroy_node(rmw_node_t * node)
 {
   (void) node;
+  puts("rmw_destroy_node");
   return RMW_RET_OK;
 }
 
@@ -32,6 +38,7 @@ const rmw_guard_condition_t *
 rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
   (void) node;
+  puts("rmw_node_get_graph_guard_condition");
   return NULL;
 }
 
@@ -46,6 +53,7 @@ rmw_create_publisher(
   (void) type_support;
   (void) topic_name;
   (void) qos_policies;
+  puts("rmw_create_publisher");
   return NULL;
 }
 
@@ -54,6 +62,7 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
 {
   (void) node;
   (void) publisher;
+  puts("rmw_destroy_publisher");
   return RMW_RET_OK;
 }
 
@@ -62,6 +71,7 @@ rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
 {
   (void) publisher;
   (void) ros_message;
+  puts("rmw_publish");
   return RMW_RET_OK;
 }
 
@@ -78,6 +88,7 @@ rmw_create_subscription(
   (void) topic_name;
   (void) qos_policies;
   (void) ignore_local_publications;
+  puts("rmw_create_subscription");
   return NULL;
 }
 
@@ -86,6 +97,7 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
 {
   (void) node;
   (void) subscription;
+  puts("rmw_destroy_subscription");
   return RMW_RET_OK;
 }
 
@@ -95,6 +107,7 @@ rmw_take(const rmw_subscription_t * subscription, void * ros_message, bool * tak
   (void) subscription;
   (void) ros_message;
   (void) taken;
+  puts("rmw_take");
   return RMW_RET_OK;
 }
 
@@ -109,6 +122,7 @@ rmw_take_with_info(
   (void) ros_message;
   (void) taken;
   (void) message_info;
+  puts("rmw_take_with_info");
   return RMW_RET_OK;
 }
 
@@ -123,6 +137,7 @@ rmw_create_client(
   (void) type_support;
   (void) service_name;
   (void) qos_policies;
+  puts("rmw_create_client");
   return NULL;
 }
 
@@ -131,6 +146,7 @@ rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)
 {
   (void) node;
   (void) client;
+  puts("rmw_destroy_client");
   return RMW_RET_OK;
 }
 
@@ -143,6 +159,7 @@ rmw_send_request(
   (void) client;
   (void) ros_request;
   (void) sequence_id;
+  puts("rmw_send_request");
   return RMW_RET_OK;
 }
 
@@ -157,6 +174,7 @@ rmw_take_response(
   (void) request_header;
   (void) ros_response;
   (void) taken;
+  puts("rmw_take_response");
   return RMW_RET_OK;
 }
 
@@ -171,6 +189,7 @@ rmw_create_service(
   (void) type_support;
   (void) service_name;
   (void) qos_policies;
+  puts("rmw_create_service");
   return NULL;
 }
 
@@ -179,6 +198,7 @@ rmw_destroy_service(rmw_node_t * node, rmw_service_t * service)
 {
   (void) node;
   (void) service;
+  puts("rmw_destroy_service");
   return RMW_RET_OK;
 }
 
@@ -193,6 +213,7 @@ rmw_take_request(
   (void) request_header;
   (void) ros_request;
   (void) taken;
+  puts("rmw_take_request");
   return RMW_RET_OK;
 }
 
@@ -205,12 +226,14 @@ rmw_send_response(
   (void) service;
   (void) request_header;
   (void) ros_response;
+  puts("rmw_send_response");
   return RMW_RET_OK;
 }
 
 rmw_guard_condition_t *
 rmw_create_guard_condition(void)
 {
+  puts("rmw_create_guard_condition");
   return NULL;
 }
 
@@ -218,6 +241,7 @@ rmw_ret_t
 rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
 {
   (void) guard_condition;
+  puts("rmw_destroy_guard_condition");
   return RMW_RET_OK;
 }
 
@@ -225,6 +249,7 @@ rmw_ret_t
 rmw_trigger_guard_condition(const rmw_guard_condition_t * guard_condition)
 {
   (void) guard_condition;
+  puts("rmw_trigger_guard_condition");
   return RMW_RET_OK;
 }
 
@@ -232,6 +257,7 @@ rmw_waitset_t *
 rmw_create_waitset(size_t max_conditions)
 {
   (void) max_conditions;
+  puts("rmw_create_waitset");
   return NULL;
 }
 
@@ -239,6 +265,7 @@ rmw_ret_t
 rmw_destroy_waitset(rmw_waitset_t * waitset)
 {
   (void) waitset;
+  puts("rmw_destroy_waitset");
   return RMW_RET_OK;
 }
 
@@ -257,6 +284,7 @@ rmw_wait(
   (void) clients;
   (void) waitset;
   (void) wait_timeout;
+  puts("rmw_wait");
   return RMW_RET_OK;
 }
 
@@ -267,6 +295,7 @@ rmw_get_topic_names_and_types(
 {
   (void) node;
   (void) topic_names_and_types;
+  puts("rmw_get_topic_names_and_types");
   return RMW_RET_OK;
 }
 
@@ -275,6 +304,7 @@ rmw_destroy_topic_names_and_types(
   rmw_topic_names_and_types_t * topic_names_and_types)
 {
   (void) topic_names_and_types;
+  puts("rmw_destroy_topic_names_and_types");
   return RMW_RET_OK;
 }
 
@@ -285,6 +315,7 @@ rmw_get_node_names(
 {
   (void) node;
   (void) node_names;
+  puts("rmw_get_node_names");
   return RMW_RET_OK;
 }
 
@@ -293,6 +324,7 @@ rmw_destroy_node_names(
   rmw_string_array_t * node_names)
 {
   (void) node_names;
+  puts("rmw_destroy_node_names");
   return RMW_RET_OK;
 }
 
@@ -305,6 +337,7 @@ rmw_count_publishers(
   (void) node;
   (void) topic_name;
   (void) count;
+  puts("rmw_count_publishers");
   return RMW_RET_OK;
 }
 
@@ -317,6 +350,7 @@ rmw_count_subscribers(
   (void) node;
   (void) topic_name;
   (void) count;
+  puts("rmw_count_subscribers");
   return RMW_RET_OK;
 }
 
@@ -325,6 +359,7 @@ rmw_get_gid_for_publisher(const rmw_publisher_t * publisher, rmw_gid_t * gid)
 {
   (void) publisher;
   (void) gid;
+  puts("rmw_get_gid_for_publisher");
   return RMW_RET_OK;
 }
 
@@ -334,6 +369,7 @@ rmw_compare_gids_equal(const rmw_gid_t * gid1, const rmw_gid_t * gid2, bool * re
   (void) gid1;
   (void) gid2;
   (void) result;
+  puts("rmw_compare_gids_equal");
   return RMW_RET_OK;
 }
 
@@ -346,5 +382,6 @@ rmw_service_server_is_available(
   (void) node;
   (void) client;
   (void) is_available;
+  puts("rmw_service_server_is_available");
   return RMW_RET_OK;
 }

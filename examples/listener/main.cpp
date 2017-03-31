@@ -24,8 +24,11 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg)
   std::cout << "I heard: [" << msg->data << "]" << std::endl;
 }
 
-int main(int argc, char * argv[])
+int main(void)
 {
+  static int argc = 0;
+  static char **argv = NULL;
+
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("listener");
 
