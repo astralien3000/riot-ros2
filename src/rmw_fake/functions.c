@@ -62,7 +62,11 @@ rmw_create_publisher(
   (void) topic_name;
   (void) qos_policies;
   puts("rmw_create_publisher");
-  return NULL;
+  rmw_publisher_t * ret = malloc(sizeof(rmw_publisher_t));
+  ret->data = NULL;
+  ret->implementation_identifier = "fake";
+  ret->topic_name = topic_name;
+  return ret;
 }
 
 rmw_ret_t
@@ -97,7 +101,11 @@ rmw_create_subscription(
   (void) qos_policies;
   (void) ignore_local_publications;
   puts("rmw_create_subscription");
-  return NULL;
+  rmw_subscription_t * ret = malloc(sizeof(rmw_subscription_t));
+  ret->data = NULL;
+  ret->implementation_identifier = "fake";
+  ret->topic_name = topic_name;
+  return ret;
 }
 
 rmw_ret_t
@@ -270,7 +278,11 @@ rmw_create_waitset(size_t max_conditions)
 {
   (void) max_conditions;
   puts("rmw_create_waitset");
-  return NULL;
+  rmw_waitset_t * ret = malloc(sizeof(rmw_waitset_t));
+  ret->data = NULL;
+  ret->guard_conditions = NULL;
+  ret->implementation_identifier = "fake";
+  return ret;
 }
 
 rmw_ret_t
@@ -278,6 +290,7 @@ rmw_destroy_waitset(rmw_waitset_t * waitset)
 {
   (void) waitset;
   puts("rmw_destroy_waitset");
+  free(waitset);
   return RMW_RET_OK;
 }
 
@@ -297,6 +310,11 @@ rmw_wait(
   (void) waitset;
   (void) wait_timeout;
   puts("rmw_wait");
+  printf("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
+  printf("guard_conditions: %4i\n", (int)guard_conditions->guard_condition_count);
+  printf("services:         %4i\n", (int)services->service_count);
+  printf("clients:          %4i\n", (int)clients->client_count);
+  while(1) {}
   return RMW_RET_OK;
 }
 
