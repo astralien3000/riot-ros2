@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static const char * fake_impl_id = "fake";
+
 const char *
 rmw_get_implementation_identifier(void)
 {
@@ -25,7 +27,7 @@ rmw_create_node(const char * name, size_t domain_id)
   (void) domain_id;
   puts("rmw_create_node");
   rmw_node_t *node = malloc(sizeof(rmw_node_t));
-  node->implementation_identifier = "fake";
+  node->implementation_identifier = fake_impl_id;
   node->data = NULL;
   node->name = name;
   return node;
@@ -46,7 +48,7 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
   puts("rmw_node_get_graph_guard_condition");
   rmw_guard_condition_t * ret = malloc(sizeof(rmw_guard_condition_t));
   ret->data = NULL;
-  ret->implementation_identifier = "fake";
+  ret->implementation_identifier = fake_impl_id;
   return ret;
 }
 
@@ -64,7 +66,7 @@ rmw_create_publisher(
   puts("rmw_create_publisher");
   rmw_publisher_t * ret = malloc(sizeof(rmw_publisher_t));
   ret->data = NULL;
-  ret->implementation_identifier = "fake";
+  ret->implementation_identifier = fake_impl_id;
   ret->topic_name = topic_name;
   return ret;
 }
@@ -103,7 +105,7 @@ rmw_create_subscription(
   puts("rmw_create_subscription");
   rmw_subscription_t * ret = malloc(sizeof(rmw_subscription_t));
   ret->data = NULL;
-  ret->implementation_identifier = "fake";
+  ret->implementation_identifier = fake_impl_id;
   ret->topic_name = topic_name;
   return ret;
 }
@@ -139,6 +141,12 @@ rmw_take_with_info(
   (void) taken;
   (void) message_info;
   puts("rmw_take_with_info");
+
+  printf("subscription: %p\n", (void*)subscription);
+  printf("ros_message: %p\n", (void*)ros_message);
+  printf("taken: %p\n", (void*)taken);
+  printf("message_info: %p\n", (void*)message_info);
+
   return RMW_RET_OK;
 }
 
@@ -252,7 +260,7 @@ rmw_create_guard_condition(void)
   puts("rmw_create_guard_condition");
   rmw_guard_condition_t * ret = malloc(sizeof(rmw_guard_condition_t));
   ret->data = NULL;
-  ret->implementation_identifier = "fake";
+  ret->implementation_identifier = fake_impl_id;
   return ret;
 }
 
@@ -281,7 +289,7 @@ rmw_create_waitset(size_t max_conditions)
   rmw_waitset_t * ret = malloc(sizeof(rmw_waitset_t));
   ret->data = NULL;
   ret->guard_conditions = NULL;
-  ret->implementation_identifier = "fake";
+  ret->implementation_identifier = fake_impl_id;
   return ret;
 }
 
@@ -310,11 +318,31 @@ rmw_wait(
   (void) waitset;
   (void) wait_timeout;
   puts("rmw_wait");
+
+  printf("timeout: %p\n", (void*)wait_timeout);
+
   printf("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
+  for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
+    printf("\t[%i] => %p\n", (int)i, (void*)subscriptions->subscribers[i]);
+    subscriptions->subscribers[i] = (void*)1;
+  }
+
   printf("guard_conditions: %4i\n", (int)guard_conditions->guard_condition_count);
+  for(size_t i = 0 ; i < guard_conditions->guard_condition_count ; i++) {
+    printf("\t[%i] => %p\n", (int)i, (void*)guard_conditions->guard_conditions[i]);
+  }
+
   printf("services:         %4i\n", (int)services->service_count);
+  for(size_t i = 0 ; i < services->service_count ; i++) {
+    printf("\t[%i] => %p\n", (int)i, (void*)services->services[i]);
+  }
+
   printf("clients:          %4i\n", (int)clients->client_count);
-  while(1) {}
+  for(size_t i = 0 ; i < clients->client_count ; i++) {
+    printf("\t[%i] => %p\n", (int)i, (void*)clients->clients[i]);
+  }
+
+  //while(1) {}
   return RMW_RET_OK;
 }
 
