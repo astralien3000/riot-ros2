@@ -9,3 +9,8 @@ INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_generator_cpp/include
 INCLUDES += -I$(ROS2BASE)/include
 
 CXXEXFLAGS += -std=c++14
+CFLAGS += -std=c11
+
+ifneq (,$(filter rcl,$(USEMODULE)))
+    USEMODULE += xtimer
+endif

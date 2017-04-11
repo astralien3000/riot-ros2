@@ -1,0 +1,17 @@
+APPLICATION = listener
+
+RIOTBASE ?= $(CURDIR)/../../RIOT
+ROS2BASE ?= $(CURDIR)/../..
+
+BOARD ?= native
+CFLAGS += -DDEVELHELP
+QUIET ?= 0
+
+EXTERNAL_MODULE_DIRS += $(ROS2BASE)
+
+USEMODULE += rcl
+USEMODULE += rmw rmw_fake
+USEMODULE += rosidl_generator_c
+
+include $(ROS2BASE)/Makefile.include
+include $(RIOTBASE)/Makefile.include
