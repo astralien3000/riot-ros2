@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "std_msgs/msg/string.hpp"
+
 static const char * fake_impl_id = "fake";
 
 const char *
@@ -26,7 +28,7 @@ rmw_create_node(const char * name, size_t domain_id)
   (void) name;
   (void) domain_id;
   puts("rmw_create_node");
-  rmw_node_t *node = malloc(sizeof(rmw_node_t));
+  rmw_node_t *node = (rmw_node_t *)malloc(sizeof(rmw_node_t));
   node->implementation_identifier = fake_impl_id;
   node->data = NULL;
   node->name = name;
@@ -46,7 +48,7 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
   (void) node;
   puts("rmw_node_get_graph_guard_condition");
-  rmw_guard_condition_t * ret = malloc(sizeof(rmw_guard_condition_t));
+  rmw_guard_condition_t * ret = (rmw_guard_condition_t *)malloc(sizeof(rmw_guard_condition_t));
   ret->data = NULL;
   ret->implementation_identifier = fake_impl_id;
   return ret;
@@ -64,7 +66,7 @@ rmw_create_publisher(
   (void) topic_name;
   (void) qos_policies;
   puts("rmw_create_publisher");
-  rmw_publisher_t * ret = malloc(sizeof(rmw_publisher_t));
+  rmw_publisher_t * ret = (rmw_publisher_t *)malloc(sizeof(rmw_publisher_t));
   ret->data = NULL;
   ret->implementation_identifier = fake_impl_id;
   ret->topic_name = topic_name;
@@ -103,10 +105,11 @@ rmw_create_subscription(
   (void) qos_policies;
   (void) ignore_local_publications;
   puts("rmw_create_subscription");
-  rmw_subscription_t * ret = malloc(sizeof(rmw_subscription_t));
+  rmw_subscription_t * ret = (rmw_subscription_t *)malloc(sizeof(rmw_subscription_t));
   ret->data = NULL;
   ret->implementation_identifier = fake_impl_id;
   ret->topic_name = topic_name;
+
   return ret;
 }
 
@@ -146,6 +149,10 @@ rmw_take_with_info(
   printf("ros_message: %p\n", (void*)ros_message);
   printf("taken: %p\n", (void*)taken);
   printf("message_info: %p\n", (void*)message_info);
+
+  *taken = true;
+  std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
+  msg->data = "lool helloooo world !!!!";
 
   return RMW_RET_OK;
 }
@@ -258,7 +265,7 @@ rmw_guard_condition_t *
 rmw_create_guard_condition(void)
 {
   puts("rmw_create_guard_condition");
-  rmw_guard_condition_t * ret = malloc(sizeof(rmw_guard_condition_t));
+  rmw_guard_condition_t * ret = (rmw_guard_condition_t *)malloc(sizeof(rmw_guard_condition_t));
   ret->data = NULL;
   ret->implementation_identifier = fake_impl_id;
   return ret;
@@ -286,7 +293,7 @@ rmw_create_waitset(size_t max_conditions)
 {
   (void) max_conditions;
   puts("rmw_create_waitset");
-  rmw_waitset_t * ret = malloc(sizeof(rmw_waitset_t));
+  rmw_waitset_t * ret = (rmw_waitset_t *)malloc(sizeof(rmw_waitset_t));
   ret->data = NULL;
   ret->guard_conditions = NULL;
   ret->implementation_identifier = fake_impl_id;
