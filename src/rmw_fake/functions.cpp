@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/string.h"
 
 static const char * fake_impl_id = "fake";
 
@@ -151,8 +152,11 @@ rmw_take_with_info(
   printf("message_info: %p\n", (void*)message_info);
 
   *taken = true;
-  std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
-  msg->data = "lool helloooo world !!!!";
+  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
+  msg->data.data = (char*)"lool helloooo world !!!!";
+  msg->data.size = sizeof("lool helloooo world !!!!");
+  //std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
+  //msg->data = "lool helloooo world !!!!";
 
   return RMW_RET_OK;
 }

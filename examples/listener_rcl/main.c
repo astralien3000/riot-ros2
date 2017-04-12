@@ -4,7 +4,7 @@
 
 void chatterCallback(const std_msgs__msg__String * msg)
 {
-  printf("I heard: [%s]", msg->data.data);
+  printf("I heard: [%s]\n", msg->data.data);
 }
 
 int main(void)
@@ -12,33 +12,62 @@ int main(void)
   static int argc = 0;
   static char **argv = NULL;
 
-  rcl_ret_t res = rcl_init(argc, argv, rcl_get_default_allocator());
-  if(res != RCL_RET_OK) {
+  rcl_ret_t ret = rcl_init(argc, argv, rcl_get_default_allocator());
+  if(ret != RCL_RET_OK) {
     puts("ERROR : rcl_init");
   }
 
   rcl_node_t node = rcl_get_zero_initialized_node();
   rcl_node_options_t node_ops = rcl_node_get_default_options();
   // ... node options customization
-  res = rcl_node_init(&node, "listener", &node_ops);
-  if(res != RCL_RET_OK) {
+  ret = rcl_node_init(&node, "listener", &node_ops);
+  if(ret != RCL_RET_OK) {
     puts("ERROR : rcl_node_init");
   }
 
   const rosidl_message_type_support_t * ts = ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, String);
   rcl_subscription_t subscription = rcl_get_zero_initialized_subscription();
   rcl_subscription_options_t subscription_ops = rcl_subscription_get_default_options();
-  res = rcl_subscription_init(&subscription, &node, ts, "chatter", &subscription_ops);
-  if(res != RCL_RET_OK) {
+  ret = rcl_subscription_init(&subscription, &node, ts, "chatter", &subscription_ops);
+  if(ret != RCL_RET_OK) {
     puts("ERROR : rcl_subscription_init");
   }
 
-/*
-  auto sub = node->create_subscription<std_msgs::msg::String>(
-    "chatter", chatterCallback, rmw_qos_profile_default);
+  rcl_wait_set_t wait_set = rcl_get_zero_initialized_wait_set();
+  ret = rcl_wait_set_init(&wait_set, 1, 0, 0, 0, 0, rcl_get_default_allocator());
+  if(ret != RCL_RET_OK) {
+    puts("ERROR : rcl_wait_set_init");
+  }
 
-  rclcpp::spin(node);
-  */
+  while(1) {
+    ret = rcl_wait_set_clear_subscriptions(&wait_set);
+    if(ret != RCL_RET_OK) {
+      puts("ERROR : rcl_wait_set_clear_subscriptions");
+    }
+
+    ret = rcl_wait_set_add_subscription(&wait_set, &subscription);
+    if(ret != RCL_RET_OK) {
+      puts("ERROR : rcl_wait_set_add_subscription");
+    }
+
+    ret = rcl_wait(&wait_set, RCL_MS_TO_NS(1000));  // 1000ms == 1s, passed as ns
+    if (ret == RCL_RET_TIMEOUT) {
+      continue;
+    }
+
+    for (size_t i = 0; i < wait_set.size_of_subscriptions; ++i) {
+      if (wait_set.subscriptions[i]) {
+        std_msgs__msg__String msg;
+        ret = rcl_take(wait_set.subscriptions[i], (void*)&msg, NULL);
+        if(ret != RCL_RET_OK) {
+          puts("ERROR : rcl_take");
+        }
+        else {
+          chatterCallback(&msg);
+        }
+      }
+    }
+  }
 
   return 0;
 }
