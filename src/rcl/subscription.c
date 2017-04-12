@@ -108,7 +108,6 @@ rcl_subscription_fini(rcl_subscription_t * subscription, rcl_node_t * node)
 rcl_subscription_options_t
 rcl_subscription_get_default_options()
 {
-  // !!! MAKE SURE THAT CHANGES TO THESE DEFAULTS ARE REFLECTED IN THE HEADER DOC STRING
   static rcl_subscription_options_t default_options = {
     .ignore_local_publications = false,
   };

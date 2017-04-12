@@ -374,26 +374,6 @@ rmw_destroy_topic_names_and_types(
 }
 
 rmw_ret_t
-rmw_get_node_names(
-  const rmw_node_t * node,
-  rmw_string_array_t * node_names)
-{
-  (void) node;
-  (void) node_names;
-  puts("rmw_get_node_names");
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_destroy_node_names(
-  rmw_string_array_t * node_names)
-{
-  (void) node_names;
-  puts("rmw_destroy_node_names");
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
 rmw_count_publishers(
   const rmw_node_t * node,
   const char * topic_name,

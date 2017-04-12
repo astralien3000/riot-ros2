@@ -29,6 +29,12 @@
  * These macros also generate introspection-specific symbols so they only match
  * the introspection C shared library symbols.
  */
+#define ROSIDL_GET_MSG_TYPE_SUPPORT(PkgName, MsgName) \
+  ROSIDL_GET_TYPE_SUPPORT(PkgName, msg, MsgName)
+
+#define ROSIDL_GET_SRV_TYPE_SUPPORT(PkgName, MsgName) \
+  ROSIDL_GET_TYPE_SUPPORT(PkgName, srv, MsgName)
+
 #define ROSIDL_GET_TYPE_SUPPORT(PkgName, MsgSubfolder, MsgName) \
   ROSIDL_GET_TYPE_SUPPORT_FUNCTION(PkgName, MsgSubfolder, MsgName)()
 

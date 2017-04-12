@@ -24,6 +24,10 @@ ifneq (,$(filter rosidl_typesupport_introspection_cpp,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rosidl_typesupport_introspection_cpp
 endif
 
+ifneq (,$(filter rosidl_typesupport_introspection_c,$(USEMODULE)))
+    DIRS += $(CURDIR)/src/rosidl_typesupport_introspection_c
+endif
+
 ifneq (,$(filter rosidl_typesupport_cpp,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rosidl_typesupport_cpp
 endif
