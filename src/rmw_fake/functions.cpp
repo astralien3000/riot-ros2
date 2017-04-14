@@ -5,10 +5,10 @@
 #include <stdlib.h>
 
 #include "std_msgs/msg/string.hpp"
-#include "std_msgs/msg/string.h"
-
-#include "rosidl_typesupport_introspection_c/message_introspection.h"
 #include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
+
+//#include "std_msgs/msg/string.h"
+//#include "rosidl_typesupport_introspection_c/message_introspection.h"
 
 #if 0
 #define puts(...)
