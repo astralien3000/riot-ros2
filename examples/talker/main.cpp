@@ -19,8 +19,11 @@
 
 #include "std_msgs/msg/string.hpp"
 
-int main(int argc, char * argv[])
+int main(void)
 {
+  static int argc = 0;
+  static char **argv = NULL;
+
   rclcpp::init(argc, argv);
 
   auto node = rclcpp::node::Node::make_shared("talker");
