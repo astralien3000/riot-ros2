@@ -1,12 +1,11 @@
-INCLUDES += -I$(ROS2BASE)/rclcpp/rclcpp/include
 INCLUDES += -I$(ROS2BASE)/rcl/rcl/include
+INCLUDES += -I$(ROS2BASE)/rclcpp/rclcpp/include
 INCLUDES += -I$(ROS2BASE)/rmw/rmw/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_generator_c/include
+INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_generator_cpp/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_interface/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_cpp/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_c/include
-INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_generator_cpp/include
-INCLUDES += -I$(ROS2BASE)/include
 
 CXXEXFLAGS += -std=c++14
 CFLAGS += -std=c11

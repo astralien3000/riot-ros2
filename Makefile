@@ -16,20 +16,4 @@ ifneq (,$(filter rmw_fake,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rmw_fake
 endif
 
-ifneq (,$(filter rosidl_generator_c,$(USEMODULE)))
-    DIRS += $(CURDIR)/src/rosidl_generator_c
-endif
-
-ifneq (,$(filter rosidl_typesupport_introspection_cpp,$(USEMODULE)))
-    DIRS += $(CURDIR)/src/rosidl_typesupport_introspection_cpp
-endif
-
-ifneq (,$(filter rosidl_typesupport_introspection_c,$(USEMODULE)))
-    DIRS += $(CURDIR)/src/rosidl_typesupport_introspection_c
-endif
-
-ifneq (,$(filter rosidl_typesupport_cpp,$(USEMODULE)))
-    DIRS += $(CURDIR)/src/rosidl_typesupport_cpp
-endif
-
 include $(RIOTBASE)/Makefile.base
