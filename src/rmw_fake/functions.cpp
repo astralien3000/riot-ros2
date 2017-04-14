@@ -9,7 +9,15 @@
 
 #include "rosidl_typesupport_introspection_c/message_introspection.h"
 
+#if 1
+#define puts(...)
+#define printf(...)
+#endif
+
 static const char * fake_impl_id = "fake";
+
+static char fake_buffer[128] = { 0 };
+static bool fake_new = false;
 
 const char *
 rmw_get_implementation_identifier(void)
@@ -91,6 +99,15 @@ rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
   (void) publisher;
   (void) ros_message;
   puts("rmw_publish");
+
+  //std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
+  //printf("msg: %s\n", msg->data.data);
+
+  std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
+  printf("msg: %s\n", msg->data.c_str());
+  strcpy(fake_buffer, msg->data.c_str());
+  fake_new = true;
+
   return RMW_RET_OK;
 }
 
@@ -114,16 +131,17 @@ rmw_create_subscription(
   ret->topic_name = topic_name;
 
   printf("type_support->typesupport_identifier: %s\n", type_support->typesupport_identifier);
-  const rosidl_typesupport_introspection_c__MessageMembers *ts_data = (const rosidl_typesupport_introspection_c__MessageMembers *)type_support->data;
-  printf("ts_data->package_name_: %s\n", ts_data->package_name_);
-  printf("ts_data->message_name_: %s\n", ts_data->message_name_);
-  printf("ts_data->member_count_: %i\n", (int)ts_data->member_count_);
 
-  for(size_t i = 0 ; i < ts_data->member_count_ ; i++) {
-    printf("ts_data->members_[%i]:\n", (int)i);
-    printf("\tname_: %s\n", ts_data->members_[i].name_);
-    printf("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
-  }
+  //const rosidl_typesupport_introspection_c__MessageMembers *ts_data = (const rosidl_typesupport_introspection_c__MessageMembers *)type_support->data;
+  //printf("ts_data->package_name_: %s\n", ts_data->package_name_);
+  //printf("ts_data->message_name_: %s\n", ts_data->message_name_);
+  //printf("ts_data->member_count_: %i\n", (int)ts_data->member_count_);
+
+  //for(size_t i = 0 ; i < ts_data->member_count_ ; i++) {
+  //  printf("ts_data->members_[%i]:\n", (int)i);
+  //  printf("\tname_: %s\n", ts_data->members_[i].name_);
+  //  printf("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
+  //}
 
   return ret;
 }
@@ -166,11 +184,14 @@ rmw_take_with_info(
   printf("message_info: %p\n", (void*)message_info);
 
   *taken = true;
-  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
-  msg->data.data = (char*)"lool helloooo world !!!!";
-  msg->data.size = sizeof("lool helloooo world !!!!");
-  //std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
-  //msg->data = "lool helloooo world !!!!";
+
+  //std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
+  //msg->data.data = (char*)"lool helloooo world !!!!";
+  //msg->data.size = sizeof("lool helloooo world !!!!");
+
+  std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
+  msg->data = fake_buffer;
+
 
   return RMW_RET_OK;
 }
@@ -349,7 +370,10 @@ rmw_wait(
   printf("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
   for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
     printf("\t[%i] => %p\n", (int)i, (void*)subscriptions->subscribers[i]);
-    subscriptions->subscribers[i] = (void*)1;
+    if(fake_new) {
+      subscriptions->subscribers[i] = (void*)1;
+      fake_new = false;
+    }
   }
 
   printf("guard_conditions: %4i\n", (int)guard_conditions->guard_condition_count);
