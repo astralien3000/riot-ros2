@@ -7,6 +7,8 @@
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/string.h"
 
+#include "rosidl_typesupport_introspection_c/message_introspection.h"
+
 static const char * fake_impl_id = "fake";
 
 const char *
@@ -110,6 +112,18 @@ rmw_create_subscription(
   ret->data = NULL;
   ret->implementation_identifier = fake_impl_id;
   ret->topic_name = topic_name;
+
+  printf("type_support->typesupport_identifier: %s\n", type_support->typesupport_identifier);
+  const rosidl_typesupport_introspection_c__MessageMembers *ts_data = (const rosidl_typesupport_introspection_c__MessageMembers *)type_support->data;
+  printf("ts_data->package_name_: %s\n", ts_data->package_name_);
+  printf("ts_data->message_name_: %s\n", ts_data->message_name_);
+  printf("ts_data->member_count_: %i\n", (int)ts_data->member_count_);
+
+  for(size_t i = 0 ; i < ts_data->member_count_ ; i++) {
+    printf("ts_data->members_[%i]:\n", (int)i);
+    printf("\tname_: %s\n", ts_data->members_[i].name_);
+    printf("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
+  }
 
   return ret;
 }
@@ -353,7 +367,6 @@ rmw_wait(
     printf("\t[%i] => %p\n", (int)i, (void*)clients->clients[i]);
   }
 
-  //while(1) {}
   return RMW_RET_OK;
 }
 
