@@ -4,6 +4,10 @@ ifneq (,$(filter rclcpp,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rclcpp
 endif
 
+ifneq (,$(filter rclc,$(USEMODULE)))
+    DIRS += $(CURDIR)/src/rclc
+endif
+
 ifneq (,$(filter rcl,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rcl
 endif

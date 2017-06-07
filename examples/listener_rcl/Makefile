@@ -10,6 +10,7 @@ QUIET ?= 0
 EXTERNAL_MODULE_DIRS += $(ROS2BASE)
 
 USEMODULE += rcl
+USEMODULE += rclc
 USEMODULE += rmw rmw_fake
 USEMODULE += rosidl_generator_c
 USEMODULE += rosidl_typesupport_introspection_c
