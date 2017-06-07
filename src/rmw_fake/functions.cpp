@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "std_msgs/msg/string.hpp"
 #include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
