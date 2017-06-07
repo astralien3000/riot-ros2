@@ -24,6 +24,10 @@ ifneq (,$(filter rosidl_typesupport_introspection_cpp,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rosidl_typesupport_introspection_cpp
 endif
 
+ifneq (,$(filter rosidl_typesupport_introspection_c,$(USEMODULE)))
+    DIRS += $(CURDIR)/src/rosidl_typesupport_introspection_c
+endif
+
 ifneq (,$(filter rcl_interfaces,$(USEMODULE)))
     ifneq (,$(filter rosidl_typesupport_introspection_cpp,$(USEMODULE)))
         DIRS += $(CURDIR)/generated/rcl_interfaces/rosidl_typesupport_introspection_cpp
@@ -33,6 +37,9 @@ endif
 ifneq (,$(filter std_msgs,$(USEMODULE)))
     ifneq (,$(filter rosidl_typesupport_introspection_cpp,$(USEMODULE)))
         DIRS += $(CURDIR)/generated/std_msgs/rosidl_typesupport_introspection_cpp
+    endif
+    ifneq (,$(filter rosidl_typesupport_introspection_c,$(USEMODULE)))
+        DIRS += $(CURDIR)/generated/std_msgs/rosidl_typesupport_introspection_c
     endif
 endif
 

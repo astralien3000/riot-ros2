@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "std_msgs/msg/string.hpp"
-#include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
+//#include "std_msgs/msg/string.hpp"
+//#include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
 
-//#include "std_msgs/msg/string.h"
-//#include "rosidl_typesupport_introspection_c/message_introspection.h"
+#include "std_msgs/msg/string.h"
+#include "rosidl_typesupport_introspection_c/message_introspection.h"
 
 #if 0
 #define puts(...)
@@ -102,12 +102,14 @@ rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
   (void) ros_message;
   puts("rmw_publish");
 
-  //std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
-  //printf("msg: %s\n", msg->data.data);
+  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
+  printf("msg: %s\n", msg->data.data);
+  strcpy(fake_buffer, msg->data.data);
 
-  std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
-  printf("msg: %s\n", msg->data.c_str());
-  strcpy(fake_buffer, msg->data.c_str());
+  //std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
+  //printf("msg: %s\n", msg->data.c_str());
+  //strcpy(fake_buffer, msg->data.c_str());
+  
   fake_new = true;
 
   return RMW_RET_OK;
@@ -134,8 +136,8 @@ rmw_create_subscription(
 
   printf("type_support->typesupport_identifier: %s\n", type_support->typesupport_identifier);
 
-  const rosidl_typesupport_introspection_cpp::MessageMembers *ts_data = (const rosidl_typesupport_introspection_cpp::MessageMembers *)type_support->data;
-  //const rosidl_typesupport_introspection_c__MessageMembers *ts_data = (const rosidl_typesupport_introspection_c__MessageMembers *)type_support->data;
+  //const rosidl_typesupport_introspection_cpp::MessageMembers *ts_data = (const rosidl_typesupport_introspection_cpp::MessageMembers *)type_support->data;
+  const rosidl_typesupport_introspection_c__MessageMembers *ts_data = (const rosidl_typesupport_introspection_c__MessageMembers *)type_support->data;
 
   printf("ts_data->package_name_: %s\n", ts_data->package_name_);
   printf("ts_data->message_name_: %s\n", ts_data->message_name_);
@@ -147,7 +149,7 @@ rmw_create_subscription(
     printf("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
   }
 
-  while(1);
+  //while(1);
 
   return ret;
 }
@@ -191,13 +193,12 @@ rmw_take_with_info(
 
   *taken = true;
 
-  //std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
-  //msg->data.data = (char*)"lool helloooo world !!!!";
-  //msg->data.size = sizeof("lool helloooo world !!!!");
+  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
+  msg->data.data = fake_buffer;
+  msg->data.size = strlen(fake_buffer);
 
-  std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
-  msg->data = fake_buffer;
-
+  //std_msgs::msg::String* msg = (std_msgs::msg::String*)ros_message;
+  //msg->data = fake_buffer;
 
   return RMW_RET_OK;
 }
