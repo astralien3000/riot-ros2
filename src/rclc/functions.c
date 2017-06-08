@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <xtimer.h>
+
 #define MAX_SUB (10)
 
 static rclc_subscription_t* _subs[MAX_SUB] = {NULL};
@@ -19,10 +21,17 @@ rclc_ret_t rclc_init(int argc, char ** argv) {
   return ret;
 }
 
-bool rclc_ok();
-void rclc_sleep_ms(size_t milliseconds);
+bool rclc_ok() {
+  return true;
+}
+
+void rclc_sleep_ms(size_t milliseconds) {
+  xtimer_usleep(milliseconds*1000);
+}
 
 void rclc_spin_node(rclc_node_t * node) {
+  (void)node;
+  
   rcl_wait_set_t wait_set = rcl_get_zero_initialized_wait_set();
   rcl_ret_t rc = rcl_wait_set_init(&wait_set, 1, 0, 0, 0, 0, rcl_get_default_allocator());
   if(rc != RCL_RET_OK) {
@@ -82,17 +91,41 @@ rclc_node_t * rclc_create_node(const char * name) {
 }
 
 rclc_ret_t rclc_destroy_node(rclc_node_t * node) {
+  rcl_ret_t ret = rcl_node_fini(node);
   free(node);
-  return RCL_RET_OK;
+  return ret;
 }
 
 rclc_publisher_t * rclc_create_publisher(
   const rclc_node_t * node,
   const rosidl_message_type_support_t * type_support,
   const char * topic_name,
-  size_t queue_size);
-rclc_ret_t rclc_destroy_publisher(rclc_publisher_t * publisher);
-rclc_ret_t rclc_publish(const rclc_publisher_t * publisher, const void * ros_message);
+  size_t queue_size) {
+  (void)queue_size;
+  
+  rclc_publisher_t* ret = malloc(sizeof(rclc_publisher_t));
+  rcl_publisher_t pub = rcl_get_zero_initialized_publisher();
+  memcpy(ret, &pub, sizeof(pub));
+  
+  rcl_publisher_options_t pub_opt = rcl_publisher_get_default_options();
+  rcl_ret_t rc = rcl_publisher_init(ret, node, type_support, topic_name, &pub_opt);
+  if(rc != RCL_RET_OK) {
+    puts("ERROR : rcl_publisher_init");
+    return NULL;
+  }
+  
+  return ret;
+}
+
+rclc_ret_t rclc_destroy_publisher(rclc_publisher_t * publisher) {
+  //rcl_publisher_fini(publisher, node);
+  free(publisher);
+  return RCL_RET_OK;
+}
+
+rclc_ret_t rclc_publish(const rclc_publisher_t * publisher, const void * ros_message) {
+  return rcl_publish(publisher, ros_message);
+}
 
 rclc_subscription_t * rclc_create_subscription(
   const rclc_node_t * node,
@@ -101,8 +134,10 @@ rclc_subscription_t * rclc_create_subscription(
   void (* callback)(const void *),
   size_t queue_size,
   bool ignore_local_publications) {
+  (void)queue_size;
+  (void)ignore_local_publications;
   
-  rclc_subscription_t* ret = malloc(sizeof(rcl_subscription_t));
+  rclc_subscription_t* ret = malloc(sizeof(rclc_subscription_t));
   rcl_subscription_t subscription = rcl_get_zero_initialized_subscription();
   memcpy(ret->rcl_subscription, &subscription, sizeof(subscription));
   ret->user_callback = callback;
@@ -112,7 +147,7 @@ rclc_subscription_t * rclc_create_subscription(
   if(rc != RCL_RET_OK) {
     puts("ERROR : rcl_subscription_init");
     return NULL;
-  }  
+  }
   
   _subs[_subs_s++] = ret;
   return ret;
@@ -120,6 +155,7 @@ rclc_subscription_t * rclc_create_subscription(
 
 rclc_ret_t rclc_destroy_subscription(rclc_subscription_t * subscription) {
   // TODO : remove from subs list
+  //rcl_subscription_fini(subscription, node);
   free(subscription);
   return RCL_RET_OK;
 }

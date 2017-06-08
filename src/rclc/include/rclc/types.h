@@ -32,9 +32,7 @@ typedef struct rclc_subscription_t
   rclc_callback_t user_callback;
 } rclc_subscription_t;
 
-typedef struct rclc_executor_t
-{
-  // TODO(wjwwood): Fill this out
-} rclc_executor_t;
+struct rclc_executor_t;
+typedef struct rclc_executor_t rclc_executor_t;
 
 #endif  // RCLC__TYPES_H_
