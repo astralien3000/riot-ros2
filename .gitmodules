@@ -19,3 +19,9 @@
 [submodule "rosidl_typesupport"]
 	path = rosidl_typesupport
 	url = https://github.com/ros2/rosidl_typesupport.git
+[submodule "ndn-riot"]
+	path = ndn-riot
+	url = https://github.com/named-data-iot/ndn-riot.git
+[submodule "ndn-riot-examples"]
+	path = ndn-riot-examples
+	url = https://github.com/named-data-iot/ndn-riot-examples.git
