@@ -138,6 +138,7 @@ rclc_subscription_t * rclc_create_subscription(
   (void)ignore_local_publications;
   
   rclc_subscription_t* ret = malloc(sizeof(rclc_subscription_t));
+  ret->rcl_subscription = malloc(sizeof(rcl_subscription_t));
   rcl_subscription_t subscription = rcl_get_zero_initialized_subscription();
   memcpy(ret->rcl_subscription, &subscription, sizeof(subscription));
   ret->user_callback = callback;
