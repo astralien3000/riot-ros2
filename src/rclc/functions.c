@@ -44,7 +44,7 @@ void rclc_sleep_ms(size_t milliseconds) {
     }
   }
 
-  rc = rcl_wait(&wait_set, RCL_MS_TO_NS(milliseconds));  // 1000ms == 1s, passed as ns
+  rc = rcl_wait(&wait_set, RCL_MS_TO_NS(milliseconds));
   if (rc == RCL_RET_TIMEOUT) {
     return;
   }
