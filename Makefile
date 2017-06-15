@@ -20,6 +20,10 @@ ifneq (,$(filter rmw_fake,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rmw_fake
 endif
 
+ifneq (,$(filter rmw_ndn,$(USEMODULE)))
+    DIRS += $(CURDIR)/src/rmw_ndn
+endif
+
 ifneq (,$(filter rosidl_generator_c,$(USEMODULE)))
     DIRS += $(CURDIR)/src/rosidl_generator_c
 endif

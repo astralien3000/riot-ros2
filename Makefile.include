@@ -26,3 +26,11 @@ CFLAGS += -Drosidl_typesupport_cpp=rosidl_typesupport_introspection_cpp
 ifneq (,$(filter rcl,$(USEMODULE)))
     USEMODULE += xtimer
 endif
+
+ifneq (,$(filter rmw_ndn,$(USEMODULE)))
+    EXTERNAL_MODULE_DIRS += $(CURDIR)/../../ndn-riot
+    USEMODULE += gnrc_netdev_default
+    USEMODULE += auto_init_gnrc_netif
+    USEMODULE += ndn-riot
+    INCLUDES += -I$(ROS2BASE)/.
+endif
