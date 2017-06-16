@@ -17,9 +17,9 @@
 #include <thread.h>
 #include <random.h>
 
-#define DEBUG 0
+#define ENABLE_DEBUG 0
 
-#if DEBUG
+#if ENABLE_DEBUG
 #define DPUTS(str) puts(str)
 #define DPRINTF(...) printf(__VA_ARGS__)
 #define DPRINT(...) printf(__VA_ARGS__)
@@ -113,6 +113,8 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
   return ret;
 }
 
+static uint32_t seq_num = 0;
+
 static int _on_interest(ndn_block_t* interest)
 {
     ndn_block_t in;
@@ -124,19 +126,18 @@ static int _on_interest(ndn_block_t* interest)
 
     DPRINT("server (pid=%" PRIkernel_pid "): interest received, name=",
            app->id);
-    ndn_name_print(&in);
-    putchar('\n');
+    //ndn_name_print(&in);
+    //putchar('\n');
 
-    ndn_shared_block_t* sdn = ndn_name_append_uint8(&in, 3);
+    ndn_shared_block_t* sdn = ndn_shared_block_create(&in);
     if (sdn == NULL) {
-        DPRINT("server (pid=%" PRIkernel_pid "): cannot append component to name\n", app->id);
+        DPRINT("server (pid=%" PRIkernel_pid "): cannot create name\n", app->id);
         return NDN_APP_ERROR;
     }
 
     ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
 
-    uint8_t buf[20] = {0};
-    ndn_block_t content = { buf, sizeof(buf) };
+    ndn_block_t content = { &seq_num, sizeof(seq_num) };
 
     ndn_shared_block_t* sd =
         ndn_data_create(&sdn->block, &meta, &content,
@@ -149,8 +150,8 @@ static int _on_interest(ndn_block_t* interest)
     }
 
     DPRINT("server (pid=%" PRIkernel_pid "): send data to NDN thread, name=", app->id);
-    ndn_name_print(&sdn->block);
-    putchar('\n');
+    //ndn_name_print(&sdn->block);
+    //putchar('\n');
     ndn_shared_block_release(sdn);
 
     // pass ownership of "sd" to the API
@@ -160,6 +161,9 @@ static int _on_interest(ndn_block_t* interest)
     }
 
     DPRINT("server (pid=%" PRIkernel_pid "): return to the app\n", app->id);
+
+    DPRINT("server (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
+    DPRINT("server (pid=%" PRIkernel_pid "): content = %lu\n", app->id, *(uint32_t*)content.buf);
     return NDN_APP_CONTINUE;
 }
 
@@ -181,8 +185,9 @@ rmw_create_publisher(
   ret->implementation_identifier = fake_impl_id;
   ret->topic_name = topic_name;
   
-  const char* prefix = "/chatter";
-  //snprintf(prefix, 32, "/%s/sync", topic_name);
+  //const char* prefix = "/chatter";
+  char prefix[64] = { 0 };
+  snprintf(prefix, 32, "/%s/sync", topic_name);
   ndn_shared_block_t* sp = ndn_name_from_uri(prefix, strlen(prefix));
   if (sp == NULL) {
       DPRINT("server (pid=%" PRIkernel_pid "): cannot create name from uri \"%s\"\n", app->id, prefix);
@@ -216,62 +221,82 @@ rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
   
   std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
   DPRINTF("msg: %s\n", msg->data.data);
-  strcpy(fake_buffer, msg->data.data);
+  
+  char prefix[64] = { 0 };
+  snprintf(prefix, 32, "/%s/%d", publisher->topic_name, seq_num);
+  ndn_shared_block_t* sdn = ndn_name_from_uri(prefix, strlen(prefix));
+  if (sdn == NULL) {
+      DPRINT("server (pid=%" PRIkernel_pid "): cannot create name from uri \"%s\"\n", app->id, prefix);
+      return;
+  }
+  
+  ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
+
+  ndn_block_t content = { msg->data.data, strlen(msg->data.data)+1 };
+
+  ndn_shared_block_t* sd =
+      ndn_data_create(&sdn->block, &meta, &content,
+                      NDN_SIG_TYPE_ECDSA_SHA256, NULL,
+                      ecc_key_pri, sizeof(ecc_key_pri));
+  if (sd == NULL) {
+      DPRINT("server (pid=%" PRIkernel_pid "): cannot create data block\n", app->id);
+      ndn_shared_block_release(sdn);
+      return NDN_APP_ERROR;
+  }
+
+  DPRINT("server (pid=%" PRIkernel_pid "): send data to NDN thread, name=", app->id);
+  //ndn_name_print(&sdn->block);
+  //putchar('\n');
+  ndn_shared_block_release(sdn);
+
+  // pass ownership of "sd" to the API
+  if (ndn_app_put_data(app, sd) != 0) {
+      DPRINT("server (pid=%" PRIkernel_pid "): cannot put data\n", app->id);
+      return NDN_APP_ERROR;
+  }  
   
   fake_new = true;
+  seq_num++;
   
   return RMW_RET_OK;
 }
 
 static uint32_t begin = 0;
 
-static int _on_data(ndn_block_t* interest, ndn_block_t* data)
+static int _on_sync_data(ndn_block_t* interest, ndn_block_t* data);
+static int _on_data(ndn_block_t* interest, ndn_block_t* data);
+static int _on_timeout(ndn_block_t* interest);
+
+static int _ndn_send_topic_interest(const char* topic_name, uint32_t seq_num)
 {
-  (void)interest;
+  char uri[32] = {0};
+  snprintf(uri, 32, "/%s/%lu", topic_name, seq_num);
   
-  uint32_t end = xtimer_now_usec();
+  ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
+  if (sin == NULL) {
+    DPRINT("client (pid=%" PRIkernel_pid "): cannot create name from uri \"%s\"\n", app->id, uri);
+    return NDN_APP_ERROR;
+  }
+    
+  uint32_t lifetime = 1000;  // 1 sec
   
-  ndn_block_t name;
-  int r = ndn_data_get_name(data, &name);
-  assert(r == 0);
+  DPRINT("client (pid=%" PRIkernel_pid "): express interest, name=", app->id);
+  //ndn_name_print(&sin->block);
+  //putchar('\n');
   
-  DPRINT("client (pid=%" PRIkernel_pid "): data received, name=", app->id);
-  ndn_name_print(&name);
-  putchar('\n');
-  
-  DPRINT("client (pid=%" PRIkernel_pid "): RTT=%"PRIu32"us\n", app->id, end - begin);
-  
-  ndn_block_t content;
-  r = ndn_data_get_content(data, &content);
-  assert(r == 0);
-  
-  DPRINT("client (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
-  
-  r = ndn_data_verify_signature(data, ecc_key_pub, sizeof(ecc_key_pub));
+  begin = xtimer_now_usec();
+  int r = ndn_app_express_interest(app, &sin->block, NULL, lifetime,
+                                   _on_data, _on_timeout);
+  ndn_shared_block_release(sin);
   if (r != 0) {
-    DPRINT("client (pid=%" PRIkernel_pid "): fail to verify signature\n", app->id);
-  }
-  else {
-    DPRINT("client (pid=%" PRIkernel_pid "): signature valid\n", app->id);
+    DPRINT("client (pid=%" PRIkernel_pid "): failed to express interest\n", app->id);
+    return NDN_APP_ERROR;
   }
   
-  return NDN_APP_CONTINUE;  // block forever...
+  return NDN_APP_CONTINUE;
 }
 
-static int _on_timeout(ndn_block_t* interest)
-{
-  ndn_block_t name;
-  int r = ndn_interest_get_name(interest, &name);
-  assert(r == 0);
-  
-  DPRINT("client (pid=%" PRIkernel_pid "): interest timeout, name=", app->id);
-  ndn_name_print(&name);
-  putchar('\n');
-  
-  return NDN_APP_CONTINUE;  // block forever...
-}
-
-static int _ndn_send_interest(const char* uri_arg)
+static int _ndn_send_sync_interest(const char* uri_arg)
 {
   char uri[32] = {0};
   snprintf(uri, 32, "/%s/sync", uri_arg);
@@ -293,12 +318,12 @@ static int _ndn_send_interest(const char* uri_arg)
   uint32_t lifetime = 1000;  // 1 sec
   
   DPRINT("client (pid=%" PRIkernel_pid "): express interest, name=", app->id);
-  ndn_name_print(&sin->block);
-  putchar('\n');
+  //ndn_name_print(&sin->block);
+  //putchar('\n');
   
   begin = xtimer_now_usec();
   int r = ndn_app_express_interest(app, &sin->block, NULL, lifetime,
-                                   _on_data, _on_timeout);
+                                   _on_sync_data, _on_timeout);
   ndn_shared_block_release(sin);
   if (r != 0) {
     DPRINT("client (pid=%" PRIkernel_pid "): failed to express interest\n", app->id);
@@ -308,6 +333,109 @@ static int _ndn_send_interest(const char* uri_arg)
   return NDN_APP_CONTINUE;
 }
 
+static int _on_sync_data(ndn_block_t* interest, ndn_block_t* data)
+{
+  (void)interest;
+  
+  uint32_t end = xtimer_now_usec();
+  
+  ndn_block_t name;
+  int r = ndn_data_get_name(data, &name);
+  assert(r == 0);
+  
+  DPRINT("client (pid=%" PRIkernel_pid "): data received, name=", app->id);
+  //ndn_name_print(&name);
+  //putchar('\n');
+  
+  DPRINT("client (pid=%" PRIkernel_pid "): RTT=%"PRIu32"us\n", app->id, end - begin);
+  
+  ndn_block_t content;
+  r = ndn_data_get_content(data, &content);
+  assert(r == 0);
+  
+  uint32_t seqn = *(uint32_t*)(content.buf+2);
+  DPRINT("client (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
+  DPRINT("client (pid=%" PRIkernel_pid "): content = %lu\n", app->id, *(uint32_t*)(content.buf+2));
+  DPRINT("client (pid=%" PRIkernel_pid "): content(prefix) = %d %d\n", app->id, (int)content.buf[0], (int)content.buf[1]);
+
+  r = ndn_data_verify_signature(data, ecc_key_pub, sizeof(ecc_key_pub));
+  if (r != 0) {
+    DPRINT("client (pid=%" PRIkernel_pid "): fail to verify signature\n", app->id);
+  }
+  else {
+    DPRINT("client (pid=%" PRIkernel_pid "): signature valid\n", app->id);
+  }
+  
+  ndn_name_component_t tncomp;
+  ndn_name_get_component_from_block(&name, 0, &tncomp);
+  char topic_name[32] = {0};
+  strncpy(topic_name, tncomp.buf, tncomp.len);
+  _ndn_send_topic_interest(topic_name, seqn);
+      
+  return NDN_APP_CONTINUE;  // block forever...
+}
+
+static int _on_data(ndn_block_t* interest, ndn_block_t* data)
+{
+  (void)interest;
+  
+  uint32_t end = xtimer_now_usec();
+  
+  ndn_block_t name;
+  int r = ndn_data_get_name(data, &name);
+  assert(r == 0);
+  
+  DPRINT("client (pid=%" PRIkernel_pid "): data received, name=", app->id);
+  //ndn_name_print(&name);
+  //putchar('\n');
+  
+  DPRINT("client (pid=%" PRIkernel_pid "): RTT=%"PRIu32"us\n", app->id, end - begin);
+  
+  ndn_block_t content;
+  r = ndn_data_get_content(data, &content);
+  assert(r == 0);
+  
+  strncpy(fake_buffer, content.buf+2, sizeof(fake_buffer));
+  fake_new = true;
+  
+  DPRINT("client (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
+  DPRINT("client (pid=%" PRIkernel_pid "): content = %s\n", app->id, content.buf+2);
+  DPRINT("client (pid=%" PRIkernel_pid "): content(prefix) = %d %d\n", app->id, (int)content.buf[0], (int)content.buf[1]);
+
+  r = ndn_data_verify_signature(data, ecc_key_pub, sizeof(ecc_key_pub));
+  if (r != 0) {
+    DPRINT("client (pid=%" PRIkernel_pid "): fail to verify signature\n", app->id);
+  }
+  else {
+    DPRINT("client (pid=%" PRIkernel_pid "): signature valid\n", app->id);
+  }
+
+  ndn_name_component_t tncomp;
+  ndn_name_get_component_from_block(&name, 0, &tncomp);
+  char topic_name[32] = {0};
+  strncpy(topic_name, tncomp.buf, tncomp.len);
+
+  ndn_name_get_component_from_block(&name, 1, &tncomp);
+  char seqn_str[32] = {0};
+  strncpy(seqn_str, tncomp.buf, tncomp.len);
+  
+  _ndn_send_topic_interest(topic_name, atoi(seqn_str)+1);
+  
+  return NDN_APP_CONTINUE;  // block forever...
+}
+
+static int _on_timeout(ndn_block_t* interest)
+{
+  ndn_block_t name;
+  int r = ndn_interest_get_name(interest, &name);
+  assert(r == 0);
+  
+  DPRINT("client (pid=%" PRIkernel_pid "): interest timeout, name=", app->id);
+  //ndn_name_print(&name);
+  //putchar('\n');
+  
+  return NDN_APP_CONTINUE;  // block forever...
+}
 
 rmw_subscription_t *
 rmw_create_subscription(
@@ -342,7 +470,7 @@ rmw_create_subscription(
     DPRINTF("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
   }
   
-  _ndn_send_interest(topic_name);
+  _ndn_send_sync_interest(topic_name);
   
   return ret;
 }
