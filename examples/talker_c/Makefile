@@ -1,4 +1,4 @@
-APPLICATION = listener
+APPLICATION = talker
 
 RIOTBASE ?= $(CURDIR)/../../RIOT
 ROS2BASE ?= $(CURDIR)/../..

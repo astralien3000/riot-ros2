@@ -51,7 +51,7 @@ void rclc_sleep_ms(size_t milliseconds) {
 
   for (size_t i = 0; i < wait_set.size_of_subscriptions; ++i) {
     if (wait_set.subscriptions[i]) {
-      char msg[1024];
+      char msg[64];
       rc = rcl_take(wait_set.subscriptions[i], (void*)&msg, NULL);
       if(rc != RCL_RET_OK) {
         puts("ERROR : rcl_take");
@@ -96,7 +96,7 @@ void rclc_spin_node(rclc_node_t * node) {
 
     for (size_t i = 0; i < wait_set.size_of_subscriptions; ++i) {
       if (wait_set.subscriptions[i]) {
-        char msg[256];
+        char msg[64];
         rc = rcl_take(wait_set.subscriptions[i], (void*)&msg, NULL);
         if(rc != RCL_RET_OK) {
           puts("ERROR : rcl_take");
