@@ -42,7 +42,7 @@ int main(void) {
 
     rclc_publish(pub, (const void*)&msg);
 
-    rclc_sleep_ms(500);
+    rclc_sleep_ms(100);
   }
 
   rclc_destroy_publisher(pub);
