@@ -590,35 +590,40 @@ rmw_wait(
   (void) wait_timeout;
   DPUTS("rmw_wait");
   
-  ndn_app_run_once(app);
-  xtimer_usleep(wait_timeout->nsec/1000 + wait_timeout->sec*1000000);
-  
-  DPRINTF("timeout: %p\n", (void*)wait_timeout);
-  
-  DPRINTF("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
-  for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
-    DPRINTF("\t[%i] => %p\n", (int)i, (void*)subscriptions->subscribers[i]);
-    if(fake_new) {
-      subscriptions->subscribers[i] = (void*)1;
-      fake_new = false;
+  uint32_t begin = xtimer_now_usec();
+  const uint32_t timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
+  do {
+    thread_yield();
+    ndn_app_run_once(app);
+
+    DPRINTF("timeout: %ul\n", timeout);
+
+    DPRINTF("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
+    for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
+      DPRINTF("\t[%i] => %p\n", (int)i, (void*)subscriptions->subscribers[i]);
+      if(fake_new) {
+        subscriptions->subscribers[i] = (void*)1;
+        fake_new = false;
+        return RMW_RET_OK;
+      }
     }
-  }
-  
-  DPRINTF("guard_conditions: %4i\n", (int)guard_conditions->guard_condition_count);
-  for(size_t i = 0 ; i < guard_conditions->guard_condition_count ; i++) {
-    DPRINTF("\t[%i] => %p\n", (int)i, (void*)guard_conditions->guard_conditions[i]);
-  }
-  
-  DPRINTF("services:         %4i\n", (int)services->service_count);
-  for(size_t i = 0 ; i < services->service_count ; i++) {
-    DPRINTF("\t[%i] => %p\n", (int)i, (void*)services->services[i]);
-  }
-  
-  DPRINTF("clients:          %4i\n", (int)clients->client_count);
-  for(size_t i = 0 ; i < clients->client_count ; i++) {
-    DPRINTF("\t[%i] => %p\n", (int)i, (void*)clients->clients[i]);
-  }
-  
+
+    DPRINTF("guard_conditions: %4i\n", (int)guard_conditions->guard_condition_count);
+    for(size_t i = 0 ; i < guard_conditions->guard_condition_count ; i++) {
+      DPRINTF("\t[%i] => %p\n", (int)i, (void*)guard_conditions->guard_conditions[i]);
+    }
+
+    DPRINTF("services:         %4i\n", (int)services->service_count);
+    for(size_t i = 0 ; i < services->service_count ; i++) {
+      DPRINTF("\t[%i] => %p\n", (int)i, (void*)services->services[i]);
+    }
+
+    DPRINTF("clients:          %4i\n", (int)clients->client_count);
+    for(size_t i = 0 ; i < clients->client_count ; i++) {
+      DPRINTF("\t[%i] => %p\n", (int)i, (void*)clients->clients[i]);
+    }
+  } while(xtimer_now_usec() - begin < timeout);
+
   return RMW_RET_OK;
 }
 
