@@ -135,7 +135,7 @@ static int _on_interest(ndn_block_t* interest)
 
     ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
 
-    ndn_block_t content = { &fake_buffer, strlen(fake_buffer) };
+    ndn_block_t content = { (const uint8_t*)&fake_buffer, strlen(fake_buffer) };
     puts(fake_buffer);
 
     ndn_shared_block_t* sd =
@@ -189,7 +189,7 @@ rmw_create_publisher(
   ndn_shared_block_t* sp = ndn_name_from_uri(prefix, strlen(prefix));
   if (sp == NULL) {
       DPRINT("server (pid=%" PRIkernel_pid "): cannot create name from uri \"%s\"\n", app->id, prefix);
-      return;
+      return NULL;
   }
 
   DPRINT("server (pid=%" PRIkernel_pid "): register prefix \"%s\"\n", app->id, prefix);
@@ -279,7 +279,7 @@ static int _on_data(ndn_block_t* interest, ndn_block_t* data)
   r = ndn_data_get_content(data, &content);
   assert(r == 0);
   
-  strncpy(fake_buffer, content.buf+2, (size_t)content.buf[1]);
+  strncpy(fake_buffer, (const char*)(content.buf+2), (size_t)content.buf[1]);
   fake_buffer[((size_t)content.buf[1])] = 0;
   fake_new = true;
   
@@ -300,16 +300,16 @@ static int _on_data(ndn_block_t* interest, ndn_block_t* data)
   ndn_name_component_t tncomp;
   ndn_name_get_component_from_block(&name, 0, &tncomp);
   char topic_name[32] = {0};
-  strncpy(topic_name, tncomp.buf, tncomp.len);
+  strncpy(topic_name, (const char*)tncomp.buf, tncomp.len);
 
   ndn_name_get_component_from_block(&name, 1, &tncomp);
   char seqn_str[32] = {0};
-  strncpy(seqn_str, tncomp.buf, tncomp.len);
+  strncpy(seqn_str, (const char*)tncomp.buf, tncomp.len);
   
   int seqn = atoi(seqn_str);
   _ndn_send_topic_interest(topic_name, seqn+1);
 
-  return NDN_APP_CONTINUE;  // block forever...
+  return NDN_APP_CONTINUE;
 }
 
 static int _on_timeout(ndn_block_t* interest)
@@ -325,16 +325,16 @@ static int _on_timeout(ndn_block_t* interest)
   ndn_name_component_t tncomp;
   ndn_name_get_component_from_block(&name, 0, &tncomp);
   char topic_name[32] = {0};
-  strncpy(topic_name, tncomp.buf, tncomp.len);
+  strncpy(topic_name, (const char*)tncomp.buf, tncomp.len);
 
   ndn_name_get_component_from_block(&name, 1, &tncomp);
   char seqn_str[32] = {0};
-  strncpy(seqn_str, tncomp.buf, tncomp.len);
+  strncpy(seqn_str, (const char*)tncomp.buf, tncomp.len);
 
   int seqn = atoi(seqn_str);
-  _ndn_send_topic_interest(topic_name, seqn+10);
+  _ndn_send_topic_interest(topic_name, seqn+1);
 
-  return NDN_APP_CONTINUE;  // block forever...
+  return NDN_APP_CONTINUE;
 }
 
 rmw_subscription_t *
