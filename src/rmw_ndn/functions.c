@@ -140,7 +140,7 @@ static int _on_interest(ndn_block_t* interest)
 
     ndn_shared_block_t* sd =
         ndn_data_create(&sdn->block, &meta, &content,
-                        NDN_SIG_TYPE_ECDSA_SHA256, NULL,
+                        NDN_SIG_TYPE_HMAC_SHA256, NULL,
                         ecc_key_pri, sizeof(ecc_key_pri));
     if (sd == NULL) {
         DPRINT("server (pid=%" PRIkernel_pid "): cannot create data block\n", app->id);
@@ -287,6 +287,7 @@ static int _on_data(ndn_block_t* interest, ndn_block_t* data)
   DPRINT("client (pid=%" PRIkernel_pid "): content = %s\n", app->id, content.buf+2);
   DPRINT("client (pid=%" PRIkernel_pid "): content(prefix) = %d %d\n", app->id, (int)content.buf[0], (int)content.buf[1]);
 
+  /*
   r = ndn_data_verify_signature(data, ecc_key_pub, sizeof(ecc_key_pub));
   if (r != 0) {
     DPRINT("client (pid=%" PRIkernel_pid "): fail to verify signature\n", app->id);
@@ -294,6 +295,7 @@ static int _on_data(ndn_block_t* interest, ndn_block_t* data)
   else {
     DPRINT("client (pid=%" PRIkernel_pid "): signature valid\n", app->id);
   }
+  */
 
   ndn_name_component_t tncomp;
   ndn_name_get_component_from_block(&name, 0, &tncomp);
