@@ -408,6 +408,7 @@ rmw_take_with_info(
   DPUTS("rmw_take_with_info");
   
   DPRINTF("subscription: %p\n", (void*)subscription);
+  DPRINTF("subscription->data: %p\n", (void*)(subscription->data));
   DPRINTF("ros_message: %p\n", (void*)ros_message);
   DPRINTF("taken: %p\n", (void*)taken);
   DPRINTF("message_info: %p\n", (void*)message_info);
@@ -590,8 +591,9 @@ rmw_wait(
   (void) wait_timeout;
   DPUTS("rmw_wait");
   
-  uint32_t begin = xtimer_now_usec();
+  const uint32_t begin = xtimer_now_usec();
   const uint32_t timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
+  const uint32_t end = begin + timeout;
   do {
     thread_yield();
     ndn_app_run_once(app);
@@ -622,7 +624,7 @@ rmw_wait(
     for(size_t i = 0 ; i < clients->client_count ; i++) {
       DPRINTF("\t[%i] => %p\n", (int)i, (void*)clients->clients[i]);
     }
-  } while(xtimer_now_usec() - begin < timeout);
+  } while(xtimer_now_usec() < end);
 
   return RMW_RET_OK;
 }
