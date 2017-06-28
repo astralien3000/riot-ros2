@@ -46,6 +46,7 @@ void rclc_sleep_ms(size_t milliseconds) {
 
   rc = rcl_wait(&wait_set, RCL_MS_TO_NS(milliseconds));
   if (rc == RCL_RET_TIMEOUT) {
+    rcl_wait_set_fini(&wait_set);
     return;
   }
 
@@ -65,6 +66,8 @@ void rclc_sleep_ms(size_t milliseconds) {
       }
     }
   }
+
+  rcl_wait_set_fini(&wait_set);
 }
 
 void rclc_spin_node(rclc_node_t * node) {
@@ -111,6 +114,8 @@ void rclc_spin_node(rclc_node_t * node) {
       }
     }
   }
+
+  rcl_wait_set_fini(&wait_set);
 }
 
 rclc_node_t * rclc_create_node(const char * name) {
