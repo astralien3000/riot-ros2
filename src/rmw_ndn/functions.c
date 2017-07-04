@@ -115,55 +115,60 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 
 static int _on_interest(ndn_block_t* interest)
 {
-    ndn_block_t in;
-    if (ndn_interest_get_name(interest, &in) != 0) {
-        DPRINT("server (pid=%" PRIkernel_pid "): cannot get name from interest"
-               "\n", app->id);
-        return NDN_APP_ERROR;
-    }
-
-    DPRINT("server (pid=%" PRIkernel_pid "): interest received, name=",
-           app->id);
-    //ndn_name_print(&in);
-    //putchar('\n');
-
-    ndn_shared_block_t* sdn = ndn_shared_block_create(&in);
-    if (sdn == NULL) {
-        DPRINT("server (pid=%" PRIkernel_pid "): cannot create name\n", app->id);
-        return NDN_APP_ERROR;
-    }
-
-    ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
-
-    ndn_block_t content = { (const uint8_t*)&fake_buffer, strlen(fake_buffer) };
-    puts(fake_buffer);
-
-    ndn_shared_block_t* sd =
-        ndn_data_create(&sdn->block, &meta, &content,
-                        NDN_SIG_TYPE_HMAC_SHA256, NULL,
-                        ecc_key_pri, sizeof(ecc_key_pri));
-    if (sd == NULL) {
-        DPRINT("server (pid=%" PRIkernel_pid "): cannot create data block\n", app->id);
-        ndn_shared_block_release(sdn);
-        return NDN_APP_ERROR;
-    }
-
-    DPRINT("server (pid=%" PRIkernel_pid "): send data to NDN thread, name=", app->id);
-    //ndn_name_print(&sdn->block);
-    //putchar('\n');
-    ndn_shared_block_release(sdn);
-
-    // pass ownership of "sd" to the API
-    if (ndn_app_put_data(app, sd) != 0) {
-        DPRINT("server (pid=%" PRIkernel_pid "): cannot put data\n", app->id);
-        return NDN_APP_ERROR;
-    }
-
-    DPRINT("server (pid=%" PRIkernel_pid "): return to the app\n", app->id);
-
-    DPRINT("server (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
-    DPRINT("server (pid=%" PRIkernel_pid "): content = %lu\n", app->id, *(uint32_t*)content.buf);
+  if(!fake_new) {
     return NDN_APP_CONTINUE;
+  }
+  fake_new = false;
+
+  ndn_block_t in;
+  if (ndn_interest_get_name(interest, &in) != 0) {
+    DPRINT("server (pid=%" PRIkernel_pid "): cannot get name from interest"
+                                         "\n", app->id);
+    return NDN_APP_ERROR;
+  }
+
+  DPRINT("server (pid=%" PRIkernel_pid "): interest received, name=",
+         app->id);
+  //ndn_name_print(&in);
+  //putchar('\n');
+
+  ndn_shared_block_t* sdn = ndn_shared_block_create(&in);
+  if (sdn == NULL) {
+    DPRINT("server (pid=%" PRIkernel_pid "): cannot create name\n", app->id);
+    return NDN_APP_ERROR;
+  }
+
+  ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
+
+  ndn_block_t content = { (const uint8_t*)&fake_buffer, strlen(fake_buffer) };
+  puts(fake_buffer);
+
+  ndn_shared_block_t* sd =
+      ndn_data_create(&sdn->block, &meta, &content,
+                      NDN_SIG_TYPE_HMAC_SHA256, NULL,
+                      ecc_key_pri, sizeof(ecc_key_pri));
+  if (sd == NULL) {
+    DPRINT("server (pid=%" PRIkernel_pid "): cannot create data block\n", app->id);
+    ndn_shared_block_release(sdn);
+    return NDN_APP_ERROR;
+  }
+
+  DPRINT("server (pid=%" PRIkernel_pid "): send data to NDN thread, name=", app->id);
+  //ndn_name_print(&sdn->block);
+  //putchar('\n');
+  ndn_shared_block_release(sdn);
+
+  // pass ownership of "sd" to the API
+  if (ndn_app_put_data(app, sd) != 0) {
+    DPRINT("server (pid=%" PRIkernel_pid "): cannot put data\n", app->id);
+    return NDN_APP_ERROR;
+  }
+
+  DPRINT("server (pid=%" PRIkernel_pid "): return to the app\n", app->id);
+
+  DPRINT("server (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
+  DPRINT("server (pid=%" PRIkernel_pid "): content = %lu\n", app->id, *(uint32_t*)content.buf);
+  return NDN_APP_CONTINUE;
 }
 
 rmw_publisher_t *
@@ -221,19 +226,21 @@ rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
   DPRINTF("msg: %s\n", msg->data.data);
   
   strcpy(fake_buffer, msg->data.data);
+  fake_new = true;
   
   return RMW_RET_OK;
 }
 
-static uint32_t begin = 0;
+char _topic_name[32] = {0};
+uint32_t _seq_num = 0;
 
 static int _on_data(ndn_block_t* interest, ndn_block_t* data);
 static int _on_timeout(ndn_block_t* interest);
 
-static int _ndn_send_topic_interest(const char* topic_name, uint32_t seq_num)
+static int _ndn_send_topic_interest(void)
 {
   char uri[32] = {0};
-  snprintf(uri, 32, "/%s/%lu", topic_name, seq_num);
+  snprintf(uri, 32, "/%s/%lu", _topic_name, _seq_num);
   
   ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
   if (sin == NULL) {
@@ -241,13 +248,12 @@ static int _ndn_send_topic_interest(const char* topic_name, uint32_t seq_num)
     return NDN_APP_ERROR;
   }
     
-  uint32_t lifetime = 1000;  // 1 sec
+  uint32_t lifetime = 100;  // ms
   
   DPRINT("client (pid=%" PRIkernel_pid "): express interest, name=", app->id);
   //ndn_name_print(&sin->block);
   //putchar('\n');
   
-  begin = xtimer_now_usec();
   int r = ndn_app_express_interest(app, &sin->block, NULL, lifetime,
                                    _on_data, _on_timeout);
   ndn_shared_block_release(sin);
@@ -297,17 +303,8 @@ static int _on_data(ndn_block_t* interest, ndn_block_t* data)
   }
   */
 
-  ndn_name_component_t tncomp;
-  ndn_name_get_component_from_block(&name, 0, &tncomp);
-  char topic_name[32] = {0};
-  strncpy(topic_name, (const char*)tncomp.buf, tncomp.len);
-
-  ndn_name_get_component_from_block(&name, 1, &tncomp);
-  char seqn_str[32] = {0};
-  strncpy(seqn_str, (const char*)tncomp.buf, tncomp.len);
-  
-  int seqn = atoi(seqn_str);
-  _ndn_send_topic_interest(topic_name, seqn+1);
+  _seq_num++;
+  _ndn_send_topic_interest();
 
   return NDN_APP_CONTINUE;
 }
@@ -322,17 +319,8 @@ static int _on_timeout(ndn_block_t* interest)
   //ndn_name_print(&name);
   //putchar('\n');
 
-  ndn_name_component_t tncomp;
-  ndn_name_get_component_from_block(&name, 0, &tncomp);
-  char topic_name[32] = {0};
-  strncpy(topic_name, (const char*)tncomp.buf, tncomp.len);
-
-  ndn_name_get_component_from_block(&name, 1, &tncomp);
-  char seqn_str[32] = {0};
-  strncpy(seqn_str, (const char*)tncomp.buf, tncomp.len);
-
-  int seqn = atoi(seqn_str);
-  _ndn_send_topic_interest(topic_name, seqn+1);
+  _seq_num++;
+  _ndn_send_topic_interest();
 
   return NDN_APP_CONTINUE;
 }
@@ -370,7 +358,8 @@ rmw_create_subscription(
     DPRINTF("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
   }
   
-  _ndn_send_topic_interest(topic_name, 0);
+  strcpy(_topic_name, topic_name);
+  _ndn_send_topic_interest();
   
   return ret;
 }
