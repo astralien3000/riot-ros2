@@ -29,8 +29,6 @@
 #define DPRINT(...)
 #endif
 
-static const char * fake_impl_id = "rmw_ndn";
-
 static char fake_buffer[128] = { 0 };
 static bool fake_new = false;
 
@@ -55,63 +53,6 @@ static const uint8_t ecc_key_pub[] = {
 };
 
 static char ndn_app_thread_stack[THREAD_STACKSIZE_MAIN];
-
-const char *
-rmw_get_implementation_identifier(void)
-{
-  DPUTS("rmw_get_implementation_identifier");
-  return fake_impl_id;
-}
-
-rmw_ret_t
-rmw_init(void)
-{
-  DPUTS("rmw_init");
-  return RMW_RET_OK;
-}
-
-rmw_node_t *
-rmw_create_node(const char * name, size_t domain_id)
-{
-  (void) name;
-  (void) domain_id;
-  DPUTS("rmw_create_node");
-  rmw_node_t *node = (rmw_node_t *)malloc(sizeof(rmw_node_t));
-  node->implementation_identifier = fake_impl_id;
-  node->data = NULL;
-  node->name = name;
-  
-  if(app == NULL) {
-    app = ndn_app_create();
-  }
-  
-  return node;
-}
-
-rmw_ret_t
-rmw_destroy_node(rmw_node_t * node)
-{
-  (void) node;
-  DPUTS("rmw_destroy_node");
-  
-  if(app != NULL) {
-    ndn_app_destroy(app);
-    app = NULL;
-  }
-  
-  return RMW_RET_OK;
-}
-
-const rmw_guard_condition_t *
-rmw_node_get_graph_guard_condition(const rmw_node_t * node)
-{
-  (void) node;
-  DPUTS("rmw_node_get_graph_guard_condition");
-  rmw_guard_condition_t * ret = (rmw_guard_condition_t *)malloc(sizeof(rmw_guard_condition_t));
-  ret->data = NULL;
-  ret->implementation_identifier = fake_impl_id;
-  return ret;
-}
 
 static int _on_interest(ndn_block_t* interest)
 {
@@ -186,7 +127,7 @@ rmw_create_publisher(
   
   rmw_publisher_t * ret = (rmw_publisher_t *)malloc(sizeof(rmw_publisher_t));
   ret->data = NULL;
-  ret->implementation_identifier = fake_impl_id;
+  ret->implementation_identifier = rmw_get_implementation_identifier();
   ret->topic_name = topic_name;
   
   char prefix[64] = { 0 };
@@ -325,92 +266,6 @@ static int _on_timeout(ndn_block_t* interest)
   return NDN_APP_CONTINUE;
 }
 
-rmw_subscription_t *
-rmw_create_subscription(
-    const rmw_node_t * node,
-    const rosidl_message_type_support_t * type_support,
-    const char * topic_name,
-    const rmw_qos_profile_t * qos_policies,
-    bool ignore_local_publications)
-{
-  (void) node;
-  (void) type_support;
-  (void) topic_name;
-  (void) qos_policies;
-  (void) ignore_local_publications;
-  DPUTS("rmw_create_subscription");
-  rmw_subscription_t * ret = (rmw_subscription_t *)malloc(sizeof(rmw_subscription_t));
-  ret->data = NULL;
-  ret->implementation_identifier = fake_impl_id;
-  ret->topic_name = topic_name;
-  
-  DPRINTF("type_support->typesupport_identifier: %s\n", type_support->typesupport_identifier);
-  
-  const rosidl_typesupport_introspection_c__MessageMembers *ts_data = (const rosidl_typesupport_introspection_c__MessageMembers *)type_support->data;
-  
-  DPRINTF("ts_data->package_name_: %s\n", ts_data->package_name_);
-  DPRINTF("ts_data->message_name_: %s\n", ts_data->message_name_);
-  DPRINTF("ts_data->member_count_: %i\n", (int)ts_data->member_count_);
-  
-  for(size_t i = 0 ; i < ts_data->member_count_ ; i++) {
-    DPRINTF("ts_data->members_[%i]:\n", (int)i);
-    DPRINTF("\tname_: %s\n", ts_data->members_[i].name_);
-    DPRINTF("\tmembers_: %p\n", (void*)ts_data->members_[i].members_);
-  }
-  
-  strcpy(_topic_name, topic_name);
-  _ndn_send_topic_interest();
-  
-  return ret;
-}
-
-rmw_ret_t
-rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
-{
-  (void) node;
-  (void) subscription;
-  DPUTS("rmw_destroy_subscription");
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_take(const rmw_subscription_t * subscription, void * ros_message, bool * taken)
-{
-  (void) subscription;
-  (void) ros_message;
-  (void) taken;
-  DPUTS("rmw_take");
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_take_with_info(
-    const rmw_subscription_t * subscription,
-    void * ros_message,
-    bool * taken,
-    rmw_message_info_t * message_info)
-{
-  (void) subscription;
-  (void) ros_message;
-  (void) taken;
-  (void) message_info;
-  DPUTS("rmw_take_with_info");
-  
-  DPRINTF("subscription: %p\n", (void*)subscription);
-  DPRINTF("subscription->data: %p\n", (void*)(subscription->data));
-  DPRINTF("ros_message: %p\n", (void*)ros_message);
-  DPRINTF("taken: %p\n", (void*)taken);
-  DPRINTF("message_info: %p\n", (void*)message_info);
-  
-  *taken = true;
-  
-  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
-  msg->data.data = fake_buffer;
-  msg->data.size = strlen(fake_buffer);
-  
-  return RMW_RET_OK;
-}
-
 rmw_client_t *
 rmw_create_client(
     const rmw_node_t * node,
@@ -515,33 +370,6 @@ rmw_send_response(
   return RMW_RET_OK;
 }
 
-rmw_guard_condition_t *
-rmw_create_guard_condition(void)
-{
-  DPUTS("rmw_create_guard_condition");
-  rmw_guard_condition_t * ret = (rmw_guard_condition_t *)malloc(sizeof(rmw_guard_condition_t));
-  ret->data = NULL;
-  ret->implementation_identifier = fake_impl_id;
-  return ret;
-}
-
-rmw_ret_t
-rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
-{
-  (void) guard_condition;
-  DPUTS("rmw_destroy_guard_condition");
-  free(guard_condition);
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_trigger_guard_condition(const rmw_guard_condition_t * guard_condition)
-{
-  (void) guard_condition;
-  DPUTS("rmw_trigger_guard_condition");
-  return RMW_RET_OK;
-}
-
 rmw_waitset_t *
 rmw_create_waitset(size_t max_conditions)
 {
@@ -550,7 +378,7 @@ rmw_create_waitset(size_t max_conditions)
   rmw_waitset_t * ret = (rmw_waitset_t *)malloc(sizeof(rmw_waitset_t));
   ret->data = NULL;
   ret->guard_conditions = NULL;
-  ret->implementation_identifier = fake_impl_id;
+  ret->implementation_identifier = rmw_get_implementation_identifier();
   return ret;
 }
 
@@ -560,61 +388,6 @@ rmw_destroy_waitset(rmw_waitset_t * waitset)
   (void) waitset;
   DPUTS("rmw_destroy_waitset");
   free(waitset);
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_wait(
-    rmw_subscriptions_t * subscriptions,
-    rmw_guard_conditions_t * guard_conditions,
-    rmw_services_t * services,
-    rmw_clients_t * clients,
-    rmw_waitset_t * waitset,
-    const rmw_time_t * wait_timeout)
-{
-  (void) subscriptions;
-  (void) guard_conditions;
-  (void) services;
-  (void) clients;
-  (void) waitset;
-  (void) wait_timeout;
-  DPUTS("rmw_wait");
-  
-  const uint32_t begin = xtimer_now_usec();
-  const uint32_t timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
-  const uint32_t end = begin + timeout;
-  do {
-    thread_yield();
-    ndn_app_run_once(app);
-
-    DPRINTF("timeout: %ul\n", timeout);
-
-    DPRINTF("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
-    for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
-      DPRINTF("\t[%i] => %p\n", (int)i, (void*)subscriptions->subscribers[i]);
-      if(fake_new) {
-        subscriptions->subscribers[i] = (void*)1;
-        fake_new = false;
-        return RMW_RET_OK;
-      }
-    }
-
-    DPRINTF("guard_conditions: %4i\n", (int)guard_conditions->guard_condition_count);
-    for(size_t i = 0 ; i < guard_conditions->guard_condition_count ; i++) {
-      DPRINTF("\t[%i] => %p\n", (int)i, (void*)guard_conditions->guard_conditions[i]);
-    }
-
-    DPRINTF("services:         %4i\n", (int)services->service_count);
-    for(size_t i = 0 ; i < services->service_count ; i++) {
-      DPRINTF("\t[%i] => %p\n", (int)i, (void*)services->services[i]);
-    }
-
-    DPRINTF("clients:          %4i\n", (int)clients->client_count);
-    for(size_t i = 0 ; i < clients->client_count ; i++) {
-      DPRINTF("\t[%i] => %p\n", (int)i, (void*)clients->clients[i]);
-    }
-  } while(xtimer_now_usec() < end);
-
   return RMW_RET_OK;
 }
 

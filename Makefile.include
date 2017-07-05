@@ -34,3 +34,5 @@ ifneq (,$(filter rmw_ndn,$(USEMODULE)))
     USEMODULE += ndn-riot
     INCLUDES += -I$(ROS2BASE)/.
 endif
+
+USEMODULE += cpp11-compat
