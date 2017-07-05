@@ -13,12 +13,16 @@ public:
 
 class Subscription;
 
-class NDNApplication {
+
+namespace rmw {
+namespace ndn {
+
+class Application {
 private:
   std::vector<Subscription*> _subs;
 
 public:
-  static NDNApplication& instance(void);
+  static Application& instance(void);
 
 public:
   void add_subscription(Subscription* sub) {
@@ -44,8 +48,11 @@ public:
   void test(void);
 };
 
-NDNApplication& NDNApplication::instance(void) {
-  static NDNApplication ret;
+}
+}
+
+rmw::ndn::Application& rmw::ndn::Application::instance(void) {
+  static rmw::ndn::Application ret;
   return ret;
 }
 
@@ -93,7 +100,7 @@ public:
     , _timeout(MAX_TIMEOUT)
     , _window(MIN_WINDOW) {
 
-    NDNApplication::instance().add_subscription(this);
+    rmw::ndn::Application::instance().add_subscription(this);
     _last_interest_date = Timer::now() - _timeout;
     update();
   }
@@ -118,7 +125,7 @@ public:
       _timeout /= 2;
     }
 
-    NDNApplication::instance().send_data_interest(_topic_name, _seq, _window, _timeout);
+    rmw::ndn::Application::instance().send_data_interest(_topic_name, _seq, _window, _timeout);
     _last_interest_date = Timer::now();
     _state = SYNCHRONIZED_OUTDATED;
   }
@@ -127,7 +134,7 @@ public:
     _state = UNSYNCHRONIZED_NOSENT;
     _timeout *= 2;
 
-    NDNApplication::instance().send_sync_interest(_topic_name, _timeout);
+    rmw::ndn::Application::instance().send_sync_interest(_topic_name, _timeout);
     _last_interest_date = Timer::now();
     _state = UNSYNCHRONIZED_SENT;
   }
@@ -158,7 +165,7 @@ static unsigned int _test_seq = 0;
 static unsigned int _last_pub = 0;
 static unsigned int _periods[] = { 100000, 10000000 };
 
-void NDNApplication::test(void) {
+void rmw::ndn::Application::test(void) {
   if(Timer::now() < _last_pub+_periods[(_test_seq/10)%(sizeof(_periods)/sizeof(_periods[0]))]) {
     return;
   }
@@ -173,11 +180,11 @@ void NDNApplication::test(void) {
   }
 }
 
-void NDNApplication::send_sync_interest(const char* topic, unsigned int timeout) {
+void rmw::ndn::Application::send_sync_interest(const char* topic, unsigned int timeout) {
   printf("[%u] send : /%s/sync (timeout:%u)\n", Timer::now(), topic, timeout);
 }
 
-void NDNApplication::send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout) {
+void rmw::ndn::Application::send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout) {
   for(unsigned int i = 1 ; i <= window ; i++) {
     printf("[%u] send : /%s/%u (timeout:%u)\n", Timer::now(), topic, seq+i, timeout);
   }
@@ -187,7 +194,7 @@ int main(void) {
   Subscription s("test");
 
   while(1) {
-    NDNApplication::instance().test();
+    rmw::ndn::Application::instance().test();
     if(s.can_take()) {
       const char* test = s.take();
       printf("got:%s\n", test);
