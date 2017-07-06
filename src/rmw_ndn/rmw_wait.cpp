@@ -5,9 +5,12 @@
 #include <xtimer.h>
 
 #include "app.hpp"
+#include "sub.hpp"
 
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 #include <debug.h>
+
+using Sub = rmw::ndn::Subscription;
 
 rmw_ret_t
 rmw_wait(
@@ -29,25 +32,32 @@ rmw_wait(
   const uint32_t begin = xtimer_now_usec();
   const uint32_t timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
   const uint32_t end = begin + timeout;
+
   do {
     thread_yield();
     rmw::ndn::Application::update();
 
-    DEBUG("timeout: %ul\n", timeout);
+    bool stop = false;
 
-    DEBUG("subscriptions:    %4i\n", (int)subscriptions->subscriber_count);
     for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
-      DEBUG("\t[%i] => %p\n", (int)i, (void*)subscriptions->subscribers[i]);
-      /*
-      if(fake_new) {
-        subscriptions->subscribers[i] = (void*)1;
-        fake_new = false;
-        return RMW_RET_OK;
+      Sub* sub = (Sub*)subscriptions->subscribers[i];
+      if(sub->can_take()) {
+        DEBUG("[%i] => %p can take !\n", (int)i, subscriptions->subscribers[i]);
+        stop = true;
       }
-      */
+    }
+
+    if(stop) {
+      for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
+        Sub* sub = (Sub*)subscriptions->subscribers[i];
+        if(!(sub->can_take())) {
+          subscriptions->subscribers[i] = NULL;
+        }
+      }
+      return RMW_RET_OK;
     }
 
   } while(xtimer_now_usec() < end);
 
-  return RMW_RET_OK;
+  return RMW_RET_TIMEOUT;
 }

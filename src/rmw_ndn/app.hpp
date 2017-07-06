@@ -24,6 +24,9 @@ public:
   static void add_subscription(Subscription* sub);
   static void rm_subscription(Subscription* sub);
 
+  static std::vector<Subscription*>::iterator begin_subscriptions(void);
+  static std::vector<Subscription*>::iterator end_subscriptions(void);
+
 public:
   static void send_sync_interest(const char* topic, unsigned int timeout);
   static void send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout);
@@ -34,9 +37,6 @@ public:
 
 public:
   static void update(void);
-
-public:
-  static void on_data(void);
 };
 
 }
