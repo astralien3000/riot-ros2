@@ -30,7 +30,7 @@ void rmw::ndn::Subscription::push_data(unsigned int seq, const char* data) {
     _timeout /= 2;
   }
 
-  App::send_data_interest(_topic_name, _seq, _window, _timeout);
+  App::send_data_interest(_topic_name, _seq+1, _window, _timeout);
   _last_interest_date = Timer::now();
   _state = SYNCHRONIZED_OUTDATED;
 }

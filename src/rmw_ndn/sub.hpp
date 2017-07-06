@@ -20,19 +20,12 @@ private:
     SYNCHRONIZED_UPDATED,
   };
 
-  enum Event {
-    INTEREST,
-    SYNC,
-    SEQ,
-    TIMEOUT,
-  };
-
 private:
   static const unsigned int MAX_TIMEOUT = 10000000; // 10s, in us
   static const unsigned int MIN_TIMEOUT = 10000; // 10ms, in us
 
   static const unsigned int MAX_WINDOW = 10;
-  static const unsigned int MIN_WINDOW = 2;
+  static const unsigned int MIN_WINDOW = 1;
 
 private:
   const char* _topic_name;

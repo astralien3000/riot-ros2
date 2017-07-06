@@ -1,4 +1,5 @@
 INCLUDES += -I$(ROS2BASE)/rcl/rcl/include
+INCLUDES += -I$(ROS2BASE)/rcl/rcl/src/rcl/stdatomic_helper/gcc
 INCLUDES += -I$(ROS2BASE)/rclcpp/rclcpp/include
 INCLUDES += -I$(ROS2BASE)/rmw/rmw/include
 

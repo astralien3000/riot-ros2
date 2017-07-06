@@ -3,9 +3,7 @@
 
 #include <vector>
 
-extern "C" {
-typedef struct ndn_app_t ndn_app_t;
-}
+#include <ndn-riot/app.h>
 
 namespace rmw {
 namespace ndn {
