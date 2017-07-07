@@ -1,5 +1,5 @@
-#ifndef SUB_HPP
-#define SUB_HPP
+#ifndef PUB_HPP
+#define PUB_HPP
 
 #include "timer.hpp"
 
@@ -13,12 +13,11 @@ private:
   using FIFO = std::vector<const char*>;
 
 private:
-  static const unsigned int MAX_QUEUE = 2;
+  static const unsigned int MAX_QUEUE = 1;
 
 private:
   const char* _topic_name;
   unsigned int _cur_seq;
-  unsigned int _pub_seq;
   unsigned int _req_seq;
   FIFO _data;
 
@@ -33,11 +32,15 @@ public:
 public:
   inline void get_sync_data(unsigned int* seq, const char** data) {
     *seq = _cur_seq;
-    *data = _data.back();
+    if(!_data.empty()) {
+      *data = _data.back();
+    }
+    else {
+      *data = NULL;
+    }
   }
 
 public:
-  void on_sync(unsigned int rand);
   void on_interest(unsigned int seq);
 
   void push_data(const char* data);
@@ -46,4 +49,4 @@ public:
 }
 }
 
-#endif//SUB_HPP
+#endif//PUB_HPP

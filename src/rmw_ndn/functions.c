@@ -17,7 +17,7 @@
 #include <thread.h>
 #include <random.h>
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 
 #if ENABLE_DEBUG
 #define DPUTS(str) puts(str)
@@ -28,136 +28,6 @@
 #define DPRINTF(...)
 #define DPRINT(...)
 #endif
-
-static char fake_buffer[128] = { 0 };
-static bool fake_new = false;
-static unsigned int seq = 0;
-
-ndn_app_t* app = NULL;
-
-static const uint8_t ecc_key_pri[] = {
-  0x38, 0x67, 0x54, 0x73, 0x8B, 0x72, 0x4C, 0xD6,
-  0x3E, 0xBD, 0x52, 0xF3, 0x64, 0xD8, 0xF5, 0x7F,
-  0xB5, 0xE6, 0xF2, 0x9F, 0xC2, 0x7B, 0xD6, 0x90,
-  0x42, 0x9D, 0xC8, 0xCE, 0xF0, 0xDE, 0x75, 0xB3
-};
-
-static int _on_interest(ndn_block_t* interest)
-{
-  if(!fake_new) {
-    return NDN_APP_CONTINUE;
-  }
-  fake_new = false;
-
-  ndn_block_t in;
-  if (ndn_interest_get_name(interest, &in) != 0) {
-    DPRINT("server (pid=%" PRIkernel_pid "): cannot get name from interest"
-                                         "\n", app->id);
-    return NDN_APP_ERROR;
-  }
-
-  char strseq[32] = {0};
-  sprintf(strseq, "%i", (int)seq);
-  ndn_shared_block_t* sdn = ndn_name_append(&in, strseq, strlen(strseq));
-
-  if (sdn == NULL) {
-    DPRINT("server (pid=%" PRIkernel_pid "): cannot create name\n", app->id);
-    return NDN_APP_ERROR;
-  }
-
-  ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
-
-  ndn_block_t content = { (const uint8_t*)&fake_buffer, strlen(fake_buffer)+1 };
-  puts(fake_buffer);
-
-  ndn_shared_block_t* sd =
-      ndn_data_create(&sdn->block, &meta, &content,
-                      NDN_SIG_TYPE_HMAC_SHA256, NULL,
-                      ecc_key_pri, sizeof(ecc_key_pri));
-  if (sd == NULL) {
-    DPRINT("server (pid=%" PRIkernel_pid "): cannot create data block\n", app->id);
-    ndn_shared_block_release(sdn);
-    return NDN_APP_ERROR;
-  }
-
-  DPRINT("server (pid=%" PRIkernel_pid "): send data to NDN thread, name=", app->id);
-  //ndn_name_print(&sdn->block);
-  //putchar('\n');
-  ndn_shared_block_release(sdn);
-
-  // pass ownership of "sd" to the API
-  if (ndn_app_put_data(app, sd) != 0) {
-    DPRINT("server (pid=%" PRIkernel_pid "): cannot put data\n", app->id);
-    return NDN_APP_ERROR;
-  }
-
-  DPRINT("server (pid=%" PRIkernel_pid "): return to the app\n", app->id);
-
-  DPRINT("server (pid=%" PRIkernel_pid "): content length = %d\n", app->id, content.len);
-  DPRINT("server (pid=%" PRIkernel_pid "): content = %s\n", app->id, (const char*)content.buf);
-  return NDN_APP_CONTINUE;
-}
-
-rmw_publisher_t *
-rmw_create_publisher(
-    const rmw_node_t * node,
-    const rosidl_message_type_support_t * type_support,
-    const char * topic_name,
-    const rmw_qos_profile_t * qos_policies)
-{
-  (void) node;
-  (void) type_support;
-  (void) topic_name;
-  (void) qos_policies;
-  DPUTS("rmw_create_publisher");
-  
-  rmw_publisher_t * ret = (rmw_publisher_t *)malloc(sizeof(rmw_publisher_t));
-  ret->data = NULL;
-  ret->implementation_identifier = rmw_get_implementation_identifier();
-  ret->topic_name = topic_name;
-  
-  char prefix[64] = { 0 };
-  snprintf(prefix, 32, "/%s", topic_name);
-  ndn_shared_block_t* sp = ndn_name_from_uri(prefix, strlen(prefix));
-  if (sp == NULL) {
-      DPRINT("server (pid=%" PRIkernel_pid "): cannot create name from uri \"%s\"\n", app->id, prefix);
-      return NULL;
-  }
-
-  DPRINT("server (pid=%" PRIkernel_pid "): register prefix \"%s\"\n", app->id, prefix);
-  // pass ownership of "sp" to the API
-  if (ndn_app_register_prefix(app, sp, _on_interest) != 0) {
-      DPRINT("server (pid=%" PRIkernel_pid "): failed to register prefix\n", app->id);
-  }
-      
-  return ret;
-}
-
-rmw_ret_t
-rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
-{
-  (void) node;
-  (void) publisher;
-  DPUTS("rmw_destroy_publisher");
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
-{
-  (void) publisher;
-  (void) ros_message;
-  DPUTS("rmw_publish");
-  
-  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
-  DPRINTF("msg: %s\n", msg->data.data);
-  
-  strcpy(fake_buffer, msg->data.data);
-  fake_new = true;
-  seq++;
-  
-  return RMW_RET_OK;
-}
 
 rmw_ret_t
 rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)

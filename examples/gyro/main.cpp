@@ -47,9 +47,6 @@ int main(void) {
 
   rclc_destroy_publisher(pub);
   rclc_destroy_node(node);
-
-  while(1) {
-  }
   
   return 0;
 }

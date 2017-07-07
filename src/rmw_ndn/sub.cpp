@@ -2,9 +2,13 @@
 
 #include "app.hpp"
 
-using App = rmw::ndn::Application;
+#define ENABLE_DEBUG 1
+#include <debug.h>
 
-rmw::ndn::Subscription::Subscription(const char* topic_name)
+using namespace rmw::ndn;
+using App = Application;
+
+Subscription::Subscription(const char* topic_name)
   : _topic_name(topic_name)
   , _state(UNSYNCHRONIZED_NOSENT)
   , _seq(0)
@@ -16,7 +20,9 @@ rmw::ndn::Subscription::Subscription(const char* topic_name)
   update();
 }
 
-void rmw::ndn::Subscription::push_data(unsigned int seq, const char* data) {
+void Subscription::push_data(unsigned int seq, const char* data) {
+  DEBUG("push_data(%u, %s)\n", seq, data);
+
   if(_seq >= seq) {
     return;
   }
@@ -35,7 +41,7 @@ void rmw::ndn::Subscription::push_data(unsigned int seq, const char* data) {
   _state = SYNCHRONIZED_OUTDATED;
 }
 
-void rmw::ndn::Subscription::on_timeout(void) {
+void Subscription::on_timeout(void) {
   _state = UNSYNCHRONIZED_NOSENT;
   _timeout *= 2;
 
@@ -44,14 +50,14 @@ void rmw::ndn::Subscription::on_timeout(void) {
   _state = UNSYNCHRONIZED_SENT;
 }
 
-void rmw::ndn::Subscription::update(void) {
+void Subscription::update(void) {
   const Timer::us timeout_date = _last_interest_date + _timeout;
   if(timeout_date <= Timer::now()) {
     on_timeout();
   }
 }
 
-const char* rmw::ndn::Subscription::take(void) {
+const char* Subscription::take(void) {
   if(_data.empty()) {
     return NULL;
   }
