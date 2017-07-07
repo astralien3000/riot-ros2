@@ -32,8 +32,11 @@ void Subscription::push_data(unsigned int seq, const char* data) {
   _state = SYNCHRONIZED_UPDATED;
 
   const Timer::us dur = Timer::now() - _last_interest_date;
-  if(dur < _timeout / 8) {
+  if(dur < _timeout / 4) {
     _timeout /= 2;
+    if(_timeout < MIN_TIMEOUT) {
+      _timeout = MIN_TIMEOUT;
+    }
   }
 
   App::send_data_interest(_topic_name, _seq+1, _window, _timeout);
@@ -44,6 +47,9 @@ void Subscription::push_data(unsigned int seq, const char* data) {
 void Subscription::on_timeout(void) {
   _state = UNSYNCHRONIZED_NOSENT;
   _timeout *= 2;
+  if(_timeout > MAX_TIMEOUT) {
+    _timeout = MAX_TIMEOUT;
+  }
 
   App::send_sync_interest(_topic_name, _timeout);
   _last_interest_date = Timer::now();

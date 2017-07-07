@@ -21,8 +21,8 @@ private:
   };
 
 private:
-  static const unsigned int MAX_TIMEOUT = 10000000; // 10s, in us
-  static const unsigned int MIN_TIMEOUT = 10000; // 10ms, in us
+  static const unsigned int MAX_TIMEOUT = 2000000; // 2s,   in us
+  static const unsigned int MIN_TIMEOUT =   10000; // 10ms, in us
 
   static const unsigned int MAX_WINDOW = 10;
   static const unsigned int MIN_WINDOW = 1;
