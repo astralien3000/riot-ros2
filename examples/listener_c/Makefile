@@ -4,8 +4,9 @@ RIOTBASE ?= $(CURDIR)/../../RIOT
 ROS2BASE ?= $(CURDIR)/../..
 
 BOARD ?= native
-CFLAGS += -DDEVELHELP
 QUIET ?= 0
+
+LINKFLAGS += -lstdc++
 
 EXTERNAL_MODULE_DIRS += $(ROS2BASE)
 
