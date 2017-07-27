@@ -35,10 +35,11 @@ rmw_wait(
 
   do {
     thread_yield();
-    rmw::mqtt::Application::update();
+    //rmw::mqtt::Application::update();
 
     bool stop = false;
 
+    /*
     for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
       Sub* sub = (Sub*)subscriptions->subscribers[i];
       if(sub->can_take()) {
@@ -56,6 +57,7 @@ rmw_wait(
       }
       return RMW_RET_OK;
     }
+    */
 
   } while(xtimer_now_usec() < end);
 

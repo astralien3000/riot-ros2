@@ -31,8 +31,8 @@ rmw_create_subscription(
   ret->implementation_identifier = rmw_get_implementation_identifier();
   ret->topic_name = topic_name;
 
-  Sub* sub = new Sub(topic_name);
-  ret->data = (void*)sub;
+  //Sub* sub = new Sub(topic_name);
+  //ret->data = (void*)sub;
 
   return ret;
 }
@@ -42,7 +42,7 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
 {
   (void) node;
   DEBUG("rmw_destroy_subscription" "\n");
-  delete (Sub*)subscription->data;
+  //delete (Sub*)subscription->data;
   free(subscription);
   return RMW_RET_OK;
 }
@@ -67,9 +67,9 @@ rmw_take_with_info(
   (void) message_info;
   DEBUG("rmw_take_with_info" "\n");
 
-  Sub* sub = (Sub*)subscription->data;
-  char* data = (char*)sub->take();
-
+  //Sub* sub = (Sub*)subscription->data;
+  //char* data = (char*)sub->take();
+  /*
   if(data == NULL) {
     *taken = false;
     return RMW_RET_ERROR;
@@ -80,6 +80,6 @@ rmw_take_with_info(
   std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
   msg->data.data = data;
   msg->data.size = strlen(data);
-
+  */
   return RMW_RET_OK;
 }

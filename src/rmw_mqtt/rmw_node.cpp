@@ -33,7 +33,7 @@ rmw_create_node(const char * name, size_t domain_id)
   node->data = NULL;
   node->name = name;
 
-  rmw::mqtt::Application::create();
+  rmw::mqtt::Application::create(name);
 
   return node;
 }

@@ -25,14 +25,10 @@ public:
   static std::vector<Subscription*>::iterator end_subscriptions(void);
 
 public:
-  static void add_publisher(Publisher* pub);
-  static void rm_publisher(Publisher* pub);
-
-  static std::vector<Publisher*>::iterator begin_publisher(void);
-  static std::vector<Publisher*>::iterator end_publisher(void);
+  static void publish(const char* topic, const char* data);
 
 public:
-  static void create(void);
+  static void create(const char* name);
   static void destroy(void);
 
 public:

@@ -36,4 +36,16 @@ ifneq (,$(filter rmw_ndn,$(USEMODULE)))
     INCLUDES += -I$(ROS2BASE)/.
 endif
 
+ifneq (,$(filter rmw_mqtt,$(USEMODULE)))
+    USEMODULE += gnrc_netdev_default
+    USEMODULE += auto_init_gnrc_netif
+    USEMODULE += gnrc_sock_udp
+    USEMODULE += gnrc_ipv6_default
+    USEMODULE += emcute
+    
+    MYADDR ?= fec0:affe::99
+    BROKERADDR ?= fec0:affe::1
+    CFLAGS += -DMYADDR=\"$(MYADDR)\" -DBROKERADDR=\"$(BROKERADDR)\"
+endif
+
 USEMODULE += cpp11-compat
