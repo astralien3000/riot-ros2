@@ -7,12 +7,10 @@ namespace rmw {
 namespace mqtt {
 
 class Subscription;
-class Publisher;
 
 class Application {
 private:
   std::vector<Subscription*> _subs;
-  std::vector<Publisher*> _pubs;
 
 public:
   static Application& instance(void);
@@ -28,11 +26,11 @@ public:
   static void publish(const char* topic, const char* data);
 
 public:
-  static void create(const char* name);
-  static void destroy(void);
+  static void subscribe(const char* topic);
 
 public:
-  static void update(void);
+  static void create(const char* name);
+  static void destroy(void);
 };
 
 }

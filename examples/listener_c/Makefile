@@ -13,7 +13,10 @@ EXTERNAL_MODULE_DIRS += $(ROS2BASE)
 USEMODULE += rcl
 USEMODULE += rclc
 USEMODULE += rmw
-USEMODULE += rmw_ndn
+
+#USEMODULE += rmw_ndn
+USEMODULE += rmw_mqtt
+
 USEMODULE += rosidl_generator_c
 USEMODULE += rosidl_typesupport_introspection_c
 USEMODULE += std_msgs

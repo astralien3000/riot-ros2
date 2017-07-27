@@ -1,5 +1,7 @@
 #include "app.hpp"
 
+#include "sub.hpp"
+
 #include "net/ipv6/addr.h"
 #include "net/gnrc/ipv6/netif.h"
 
@@ -19,7 +21,6 @@ Application& Application::instance(void) {
   static Application ret;
   return ret;
 }
-
 
 static void *_emcute_thread(void *arg)
 {
@@ -103,4 +104,27 @@ void Application::publish(const char* topic, const char* data) {
   }
   
   DEBUG("Published %i bytes to topic '%s [%i]'\n", len, t.name, t.id);
+}
+
+void Application::add_subscription(Subscription* sub) {
+  instance()._subs.push_back(sub);
+}
+
+void Application::rm_subscription(Subscription* sub) {
+  auto rm = instance()._subs.end();
+  for(auto it = instance()._subs.begin() ; it != instance()._subs.end() ; it++) {
+    if((*it) == sub) {
+      rm = it;
+      break;
+    }
+  }
+  instance()._subs.erase(rm);
+}
+
+std::vector<Subscription*>::iterator Application::begin_subscriptions(void) {
+  return instance()._subs.begin();
+}
+
+std::vector<Subscription*>::iterator Application::end_subscriptions(void) {
+  return instance()._subs.end();
 }

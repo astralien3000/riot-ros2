@@ -1,7 +1,7 @@
 #ifndef SUB_HPP
 #define SUB_HPP
 
-#include "timer.hpp"
+#include "net/emcute.h"
 
 #include <vector>
 
@@ -9,11 +9,13 @@ namespace rmw {
 namespace mqtt {
 
 class Subscription {
+public:
+  emcute_sub_t sub;
+  
 private:
   using FIFO = std::vector<const char*>;
 
 private:
-  const char* _topic_name;
   FIFO _data;
 
 public:
@@ -21,18 +23,16 @@ public:
 
 public:
   inline const char* get_topic_name(void) {
-    return _topic_name;
+    return sub.topic.name;
   }
 
   inline bool can_take(void) {
     return !_data.empty();
   }
 
-public:
-  void push_data(unsigned int seq, const char* data);
-  void on_timeout(void);
-
-  void update(void);
+  void push_data(const char* data) {
+    _data.push_back(data);
+  }
 
   const char* take(void);
 };
