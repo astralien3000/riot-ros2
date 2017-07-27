@@ -43,9 +43,13 @@ ifneq (,$(filter rmw_mqtt,$(USEMODULE)))
     USEMODULE += gnrc_ipv6_default
     USEMODULE += emcute
     
-    MYADDR ?= fec0:affe::99
     BROKERADDR ?= fec0:affe::1
-    CFLAGS += -DMYADDR=\"$(MYADDR)\" -DBROKERADDR=\"$(BROKERADDR)\"
+    
+    ifdef MYADDR
+        CFLAGS += -DMYADDR=\"$(MYADDR)\"
+    endif
+    
+    CFLAGS += -DBROKERADDR=\"$(BROKERADDR)\"
 endif
 
 USEMODULE += cpp11-compat

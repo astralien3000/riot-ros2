@@ -32,7 +32,8 @@ void Application::create(const char* name) {
   (void)name;
   
   kernel_pid_t dev = 5;
-  
+
+#ifdef MYADDR
   const char* addr_str = MYADDR;
   ipv6_addr_t addr;
   ipv6_addr_t* ifaddr;
@@ -58,6 +59,7 @@ void Application::create(const char* name) {
   gnrc_ipv6_netif_addr_get(ifaddr)->preferred = UINT32_MAX;
   
   DEBUG("success: added %s/%d to interface %" PRIkernel_pid "\n", addr_str, prefix_len, dev);
+#endif
   
   static char stack[THREAD_STACKSIZE_DEFAULT];
   thread_create(stack, sizeof(stack), EMCUTE_PRIO, 0, _emcute_thread, (void*)name, "emcute");
