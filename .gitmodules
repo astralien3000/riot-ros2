@@ -25,3 +25,6 @@
 [submodule "ndn-riot-examples"]
 	path = ndn-riot-examples
 	url = https://github.com/named-data-iot/ndn-riot-examples.git
+[submodule "mosquitto.rsmb"]
+	path = mosquitto.rsmb
+	url = https://github.com/eclipse/mosquitto.rsmb.git
