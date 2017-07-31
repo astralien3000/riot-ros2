@@ -30,19 +30,40 @@ Despite there is a Makefile at the root of the repository, you cannot call `make
 ## Linux example : NDN
 
 First, setup the tap interface :
-
 ```sh
 ./RIOT/dist/tools/tapsetup/tapsetup
 ```
 
 On a first terminal : 
-
 ```sh
 (cd examples/talker_c && make PORT=tap0 all term)
 ```
 
 On a second terminal : 
-
 ```sh
 (cd examples/listener_c && make PORT=tap1 all term)
+```
+
+## Linux example : emcute (MQTT-SN)
+
+On a first terminal, setup the tap interface :
+```sh
+./RIOT/dist/tools/tapsetup/tapsetup
+sudo ip a a fec0:affe::1/64 dev tapbr0
+```
+
+Compile and run the broker :
+```sh
+(cd mosquitto.rsmb/rsmb/src/ && make)
+(./mosquitto.rsmb/rsmb/src/broker_mqtts broker.conf)
+```
+
+On a second terminal :
+```sh
+(cd examples/talker_c && make RMW=rmw_mqtt PORT=tap0 MYADDR=fec0:affe::2 all term)
+```
+
+On a thidr terminal :
+```sh
+(cd examples/listener_c && make RMW=rmw_mqtt PORT=tap1 MYADDR=fec0:affe::3 all term)
 ```
