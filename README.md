@@ -63,7 +63,7 @@ On a second terminal :
 (cd examples/talker_c && make RMW=rmw_mqtt PORT=tap0 MYADDR=fec0:affe::2 all term)
 ```
 
-On a thidr terminal :
+On a third terminal :
 ```sh
 (cd examples/listener_c && make RMW=rmw_mqtt PORT=tap1 MYADDR=fec0:affe::3 all term)
 ```
