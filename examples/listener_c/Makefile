@@ -5,6 +5,7 @@ ROS2BASE ?= $(CURDIR)/../..
 
 BOARD ?= native
 QUIET ?= 0
+WERROR ?= 0
 
 LINKFLAGS += -lstdc++
 
@@ -14,8 +15,8 @@ USEMODULE += rcl
 USEMODULE += rclc
 USEMODULE += rmw
 
-#USEMODULE += rmw_ndn
-USEMODULE += rmw_mqtt
+RMW += rmw_ndn
+USEMODULE += $(RMW)
 
 USEMODULE += rosidl_generator_c
 USEMODULE += rosidl_typesupport_introspection_c
