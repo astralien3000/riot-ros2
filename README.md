@@ -31,6 +31,7 @@ Despite there is a Makefile at the root of the repository, you cannot call `make
 
 First, setup the tap interface :
 ```sh
+# Don't use twice
 ./RIOT/dist/tools/tapsetup/tapsetup
 ```
 
@@ -48,6 +49,7 @@ On a second terminal :
 
 On a first terminal, setup the tap interface :
 ```sh
+# Don't use twice
 ./RIOT/dist/tools/tapsetup/tapsetup
 sudo ip a a fec0:affe::1/64 dev tapbr0
 ```
@@ -66,4 +68,18 @@ On a second terminal :
 On a third terminal :
 ```sh
 (cd examples/listener_c && make RMW=rmw_mqtt PORT=tap1 MYADDR=fec0:affe::3 all term)
+```
+
+# Troubleshooting
+
+If this command fails :
+```sh
+./RIOT/dist/tools/tapsetup/tapsetup
+```
+Maybe it's because you already called it.
+It is not supposed to be called twice.
+
+Try :
+```sh
+./RIOT/dist/tools/tapsetup/tapsetup -d
 ```
