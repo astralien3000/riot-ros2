@@ -16,6 +16,11 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 | RMW (ROS MiddleWare) | Based on DDS | 2 implementations : `ndn-riot` and `emcute` |
 | rosidl | DDS, introspection | only introspection |
 
+# Examples
+
+ - [talker_c](/examples/talker_c/main.c)
+ - [listener_c](/examples/listener_c/main.c)
+
 # Usage
 
 ## Clone the project
@@ -47,6 +52,8 @@ On a second terminal :
 
 ## Linux example : emcute (MQTT-SN)
 
+[A more complete tutorial about emcute usage](https://github.com/RIOT-OS/RIOT/tree/3d48eee0955e9452662af3b732516f8437f53092/examples/emcute)
+
 On a first terminal, setup the tap interface :
 ```sh
 # Don't use twice
@@ -74,7 +81,9 @@ On a third terminal :
 
 If this command fails :
 ```sh
-./RIOT/dist/tools/tapsetup/tapsetup
+> ./RIOT/dist/tools/tapsetup/tapsetup
+creating tapbr0
+RTNETLINK answers: File exists
 ```
 Maybe it's because you already called it.
 It is not supposed to be called twice.
