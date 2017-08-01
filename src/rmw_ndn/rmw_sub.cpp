@@ -78,7 +78,15 @@ rmw_take_with_info(
   *taken = true;
 
   std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
+
+#ifdef USE_SHARED_POINTER
+  char* new_data = new char[strlen(data)+1];
+  strcpy(new_data, data);
+  msg->data.data = new_data;
+#else
   msg->data.data = data;
+#endif
+  
   msg->data.size = strlen(data);
 
   return RMW_RET_OK;

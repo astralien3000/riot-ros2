@@ -7,7 +7,7 @@
 #include "app.hpp"
 #include "sub.hpp"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include <debug.h>
 
 using Sub = rmw::ndn::Subscription;
@@ -30,7 +30,12 @@ rmw_wait(
   DEBUG("rmw_wait" "\n");
 
   const uint32_t begin = xtimer_now_usec();
-  const uint32_t timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
+  
+  uint32_t timeout = 0;
+  if(wait_timeout) {
+    timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
+  }
+  
   const uint32_t end = begin + timeout;
 
   do {
