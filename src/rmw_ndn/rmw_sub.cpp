@@ -26,13 +26,13 @@ rmw_create_subscription(
   (void) qos_policies;
   (void) ignore_local_publications;
   DEBUG("rmw_create_subscription" "\n");
-  //rosidl_typesupport_test__MessageMembers* tsdata = type_support->data;
+  rosidl_typesupport_test__MessageMembers* tsdata = (rosidl_typesupport_test__MessageMembers*)type_support->data;
 
   rmw_subscription_t * ret = (rmw_subscription_t *)malloc(sizeof(rmw_subscription_t));
   ret->implementation_identifier = rmw_get_implementation_identifier();
   ret->topic_name = topic_name;
 
-  Sub* sub = new Sub(topic_name);
+  Sub* sub = new Sub(topic_name, tsdata->deserialize_);
   ret->data = (void*)sub;
 
   return ret;
@@ -69,26 +69,9 @@ rmw_take_with_info(
   DEBUG("rmw_take_with_info" "\n");
 
   Sub* sub = (Sub*)subscription->data;
-  char* data = (char*)sub->take();
-
-  if(data == NULL) {
-    *taken = false;
-    return RMW_RET_ERROR;
-  }
+  sub->take(ros_message);
 
   *taken = true;
-
-  std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
-
-#ifdef USE_SHARED_POINTER
-  char* new_data = new char[strlen(data)+1];
-  strcpy(new_data, data);
-  msg->data.data = new_data;
-#else
-  msg->data.data = data;
-#endif
-  
-  msg->data.size = strlen(data);
 
   return RMW_RET_OK;
 }

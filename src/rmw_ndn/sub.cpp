@@ -8,27 +8,28 @@
 using namespace rmw::ndn;
 using App = Application;
 
-Subscription::Subscription(const char* topic_name)
+Subscription::Subscription(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t))
   : _topic_name(topic_name)
   , _state(UNSYNCHRONIZED_NOSENT)
   , _seq(0)
   , _timeout(MAX_TIMEOUT)
-  , _window(MIN_WINDOW) {
+  , _window(MIN_WINDOW)
+  , _deserialize(deserialize) {
 
   App::add_subscription(this);
   _last_interest_date = Timer::now() - _timeout;
   update();
 }
 
-void Subscription::push_data(unsigned int seq, const char* data) {
-  DEBUG("push_data(%u, %s)\n", seq, data);
+void Subscription::push_data(unsigned int seq, const char* data, size_t size) {
+  DEBUG("push_data(%u, data, %u)\n", seq, (unsigned int)size);
 
   if(_seq >= seq) {
     return;
   }
 
   _seq = seq;
-  _data.push_back(data);
+  _data.push_back(std::make_pair(data, size));
   _state = SYNCHRONIZED_UPDATED;
 
   const Timer::us dur = Timer::now() - _last_interest_date;
@@ -63,12 +64,12 @@ void Subscription::update(void) {
   }
 }
 
-const char* Subscription::take(void) {
+void Subscription::take(void* msg) {
   if(_data.empty()) {
-    return NULL;
+    return;
   }
 
-  const char* ret = _data.front();
+  auto ret = _data.front();
   _data.erase(_data.begin());
-  return ret;
+  size_t tmp = _deserialize(msg, std::get<0>(ret), std::get<1>(ret));
 }

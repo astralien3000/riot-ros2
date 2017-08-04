@@ -4,13 +4,14 @@
 #include "timer.hpp"
 
 #include <vector>
+#include <utility>
 
 namespace rmw {
 namespace ndn {
 
 class Subscription {
 private:
-  using FIFO = std::vector<const char*>;
+  using FIFO = std::vector<std::pair<const char*,size_t>>;
 
 private:
   enum State {
@@ -35,9 +36,11 @@ private:
   unsigned int _window;
   FIFO _data;
   Timer::us _last_interest_date;
+  
+  size_t (*_deserialize)(void*, const char*, size_t);
 
 public:
-  Subscription(const char* topic_name);
+  Subscription(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t));
 
 public:
   inline const char* get_topic_name(void) {
@@ -49,12 +52,12 @@ public:
   }
 
 public:
-  void push_data(unsigned int seq, const char* data);
+  void push_data(unsigned int seq, const char* data, size_t size);
   void on_timeout(void);
 
   void update(void);
 
-  const char* take(void);
+  void take(void* msg);
 };
 
 }

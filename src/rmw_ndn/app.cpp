@@ -202,6 +202,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
   DEBUG("content : [%s]\n", (const char*)(content.buf+2));
 
   const char* tmp_data = (const char*)(content.buf+2);
+  size_t tmp_size = (size_t)*(const char*)(content.buf+1);
   for(auto it = Application::begin_subscriptions() ; it != Application::end_subscriptions() ; it++) {
     char uri[32] = {0};
     snprintf(uri, sizeof(uri), "/%s", (*it)->get_topic_name());
@@ -216,7 +217,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
       ndn_name_component_t comp;
       ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&name)-1, &comp);
       unsigned int seq = atoi((const char*)comp.buf);
-      (*it)->push_data(seq, tmp_data);
+      (*it)->push_data(seq, tmp_data, tmp_size);
     }
 
     ndn_shared_block_release(sin);
