@@ -39,7 +39,7 @@ public:
   static void send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout);
 
 public:
-  static void publish(const char* topic, unsigned int seq, const char* data);
+  static void publish(const char* topic, unsigned int seq, const char* data, size_t size);
 
 public:
   static void create(void);

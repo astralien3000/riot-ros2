@@ -4,13 +4,14 @@
 #include "timer.hpp"
 
 #include <vector>
+#include <utility>
 
 namespace rmw {
 namespace ndn {
 
 class Publisher {
 private:
-  using FIFO = std::vector<const char*>;
+  using FIFO = std::vector<std::pair<const char*,size_t>>;
 
 private:
   static const unsigned int MAX_QUEUE = 1;
@@ -20,9 +21,11 @@ private:
   unsigned int _cur_seq;
   unsigned int _req_seq;
   FIFO _data;
+  
+  size_t (*_serialize)(const void*, char*, size_t);
 
 public:
-  Publisher(const char* topic_name);
+  Publisher(const char* topic_name, size_t (*serialize)(const void*, char*, size_t));
 
 public:
   inline const char* get_topic_name(void) {
@@ -30,10 +33,11 @@ public:
   }
 
 public:
-  inline void get_sync_data(unsigned int* seq, const char** data) {
+  inline void get_sync_data(unsigned int* seq, const char** data, size_t* size) {
     *seq = _cur_seq;
     if(!_data.empty()) {
-      *data = _data.back();
+      *data = std::get<0>(_data.back());
+      *size = std::get<1>(_data.back());
     }
     else {
       *data = NULL;
@@ -43,7 +47,7 @@ public:
 public:
   void on_interest(unsigned int seq);
 
-  void push_data(const char* data);
+  void push_data(const void* msg);
 };
 
 }

@@ -147,7 +147,7 @@ std::vector<Publisher*>::iterator Application::end_publisher(void) {
   return instance()._pubs.end();
 }
 
-void Application::publish(const char* topic, unsigned int seq, const char* data) {
+void Application::publish(const char* topic, unsigned int seq, const char* data, size_t size) {
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "/%s/%u", topic, seq);
   DEBUG("Send interest %s\n", uri);
@@ -160,7 +160,7 @@ void Application::publish(const char* topic, unsigned int seq, const char* data)
 
   ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
 
-  ndn_block_t content = { (const uint8_t*)data, (int)(strlen(data)+1) };
+  ndn_block_t content = { (const uint8_t*)data, (int)(size) };
 
   ndn_shared_block_t* sd =
       ndn_data_create(&sdn->block, &meta, &content,
@@ -225,9 +225,8 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
   return NDN_APP_CONTINUE;
 }
 
-int send_sync(ndn_block_t& name, unsigned int seq, const char* data) {
-  DEBUG("send_sync(%u, %s)\n", seq, data);
-  DEBUG("strlen(data) = %u\n", strlen(data));
+int send_sync(ndn_block_t& name, unsigned int seq, const char* data, size_t size) {
+  DEBUG("send_sync(%u, %s, %u)\n", seq, data, (unsigned int)size);
 
   char strseq[32] = {0};
   sprintf(strseq, "%i", (int)seq);
@@ -240,7 +239,7 @@ int send_sync(ndn_block_t& name, unsigned int seq, const char* data) {
 
   ndn_metainfo_t meta = { NDN_CONTENT_TYPE_BLOB, -1 };
 
-  ndn_block_t content = { (const uint8_t*)data, (int)(strlen(data)+1) };
+  ndn_block_t content = { (const uint8_t*)data, (int)(size) };
 
   ndn_shared_block_t* sd =
       ndn_data_create(&sdn->block, &meta, &content,
@@ -294,9 +293,10 @@ int _on_interest(ndn_block_t* interest)
         DEBUG("SYNC\n");
         unsigned int seq = 0;
         const char* data = NULL;
-        (*it)->get_sync_data(&seq, &data);
+        size_t size = 0;
+        (*it)->get_sync_data(&seq, &data, &size);
         if(data != NULL) {
-          send_sync(name, seq, data);
+          send_sync(name, seq, data, size);
         }
       }
       else {

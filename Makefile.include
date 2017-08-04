@@ -9,11 +9,6 @@ INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_generator_c/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_generator_cpp/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_interface/include
 INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_cpp/include
-INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_c/include
-INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_c/include/rosidl_typesupport_introspection_c/impl
-
-INCLUDES += -I$(ROS2BASE)/rosidl_typesupport_test/include
-INCLUDES += -I$(ROS2BASE)/generated/std_msgs/rosidl_typesupport_test/include
 
 INCLUDES += -I$(ROS2BASE)/generated/rcl_interfaces/rosidl_generator_cpp/include
 INCLUDES += -I$(ROS2BASE)/generated/builtin_interfaces/rosidl_generator_cpp/include
@@ -27,7 +22,16 @@ CFLAGS += -std=c11
 
 CFLAGS += -Drosidl_typesupport_cpp=rosidl_typesupport_introspection_cpp
 
+ifneq (,$(filter rosidl_typesupport_introspection_c,$(USEMODULE)))
+    INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_c/include
+    INCLUDES += -I$(ROS2BASE)/rosidl/rosidl_typesupport_introspection_c/include/rosidl_typesupport_introspection_c/impl
+endif
+
 ifneq (,$(filter rosidl_typesupport_test,$(USEMODULE)))
+    INCLUDES += -I$(ROS2BASE)/rosidl_typesupport_test/include
+    INCLUDES += -I$(ROS2BASE)/rosidl_typesupport_test/include/rosidl_typesupport_test/impl
+    INCLUDES += -I$(ROS2BASE)/generated/std_msgs/rosidl_typesupport_test/include
+    
     USEMODULE += cbor
 endif
 
