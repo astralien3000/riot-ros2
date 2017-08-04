@@ -20,6 +20,7 @@ function_prefix = '%s__%s__rosidl_typesupport_test' % (spec.base_type.pkg_name, 
 // providing offsetof()
 #include <stddef.h>
 #include <stdio.h>
+#include <cbor.h>
 
 #include <@(spec.base_type.pkg_name)/@(subfolder)/@(get_header_filename_from_msg_name(spec.base_type.type))__test_type_support.h>
 #include "@(spec.base_type.pkg_name)/msg/rosidl_generator_c__visibility_control.h"
@@ -193,15 +194,60 @@ for index, field in enumerate(spec.fields):
 size_t @(function_prefix)__@(spec.base_type.type)_serialize(const void* ros_message, char* buffer, size_t buffer_size) {
 @{
 print("    const %s__%s__%s* msg = ros_message;" % (spec.base_type.pkg_name, subfolder, spec.base_type.type));
+print("    size_t ret = 0;");
+print("    cbor_stream_t stream;")
+print("    cbor_init(&stream, (unsigned char*)buffer, buffer_size);")
+print("    cbor_clear(&stream);")
 for index, field in enumerate(spec.fields):
-    if field.type.is_primitive_type() and not field.type.is_array and not field.type.type == "string":
-        print("    printf(\"%s\\n\", (int)msg->%s);" % ("%i", field.name));
+    if field.type.is_primitive_type() and not field.type.is_array:
+        print("    ret += ");
+        if field.type.type == "string":
+            print("        cbor_serialize_byte_stringl(&stream, msg->%s.data, msg->%s.size);" % (field.name, field.name));
+        elif field.type.type == "int32":
+            print("        cbor_serialize_int(&stream, msg->%s);" % field.name);
+        elif field.type.type == "uint32":
+            print("        cbor_serialize_int(&stream, (int)msg->%s);" % field.name);
+        elif field.type.type == "int64":
+            print("        cbor_serialize_int64_t(&stream, msg->%s);" % field.name);
+        elif field.type.type == "uint64":
+            print("        cbor_serialize_uint64_t(&stream, msg->%s);" % field.name);
+        else:
+            print("        0;// msg->%s : NOT SUPPORTED !" % field.name);
     else:
-        print("    // msg->%s" % field.name);
-print("    (void)msg;");
-print("    (void)buffer;");
-print("    (void)buffer_size;");
-print("    return 0;");
+        print("    // msg->%s : NOT SUPPORTED !" % field.name);
+print("    return ret;");
+}@
+}
+
+@
+@#######################################################################
+@# Serialize function
+@#######################################################################
+size_t @(function_prefix)__@(spec.base_type.type)_deserialize(void* ros_message, const char* buffer, size_t buffer_size) {
+@{
+print("    %s__%s__%s* msg = ros_message;" % (spec.base_type.pkg_name, subfolder, spec.base_type.type));
+print("    size_t ret = 0;");
+print("    cbor_stream_t stream;")
+print("    cbor_init(&stream, (unsigned char*)buffer, buffer_size);")
+print("    cbor_stream_decode(&stream);")
+for index, field in enumerate(spec.fields):
+    if field.type.is_primitive_type() and not field.type.is_array:
+        print("    ret += ");
+        if field.type.type == "string":
+            print("        cbor_deserialize_byte_string(&stream, ret, msg->%s.data, msg->%s.capacity);" % (field.name, field.name));
+        elif field.type.type == "int32":
+            print("        cbor_deserialize_int(&stream, ret, &msg->%s);" % field.name);
+        elif field.type.type == "uint32":
+            print("        cbor_deserialize_int(&stream, ret, (int*)&msg->%s);" % field.name);
+        elif field.type.type == "int64":
+            print("        cbor_deserialize_int64_t(&stream, ret, &msg->%s);" % field.name);
+        elif field.type.type == "uint64":
+            print("        cbor_deserialize_uint64_t(&stream, ret, &msg->%s);" % field.name);
+        else:
+            print("        0;// msg->%s : NOT SUPPORTED !" % field.name);
+    else:
+        print("    // msg->%s : NOT SUPPORTED !" % field.name);
+print("    return ret;");
 }@
 }
 @[end if]@
@@ -217,7 +263,7 @@ static const rosidl_typesupport_test__MessageMembers @(function_prefix)__@(spec.
 @[if spec.fields]@
   @(function_prefix)__@(spec.base_type.type)_message_member_array,
   @(function_prefix)__@(spec.base_type.type)_serialize,
-  0
+  @(function_prefix)__@(spec.base_type.type)_deserialize
 @[else]@
   0, 0, 0
 @[end if]@

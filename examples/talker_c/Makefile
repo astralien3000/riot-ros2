@@ -19,7 +19,10 @@ RMW ?= rmw_ndn
 USEMODULE += $(RMW)
 
 USEMODULE += rosidl_generator_c
-USEMODULE += rosidl_typesupport_introspection_c
+
+#USEMODULE += rosidl_typesupport_introspection_c
+USEMODULE += rosidl_typesupport_test
+
 USEMODULE += std_msgs
 
 include $(ROS2BASE)/Makefile.include
