@@ -57,7 +57,7 @@ public:
 
   void update(void);
 
-  void take(void* msg);
+  bool take(void* msg);
 };
 
 }

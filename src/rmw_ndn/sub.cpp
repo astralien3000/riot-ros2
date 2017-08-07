@@ -64,12 +64,12 @@ void Subscription::update(void) {
   }
 }
 
-void Subscription::take(void* msg) {
+bool Subscription::take(void* msg) {
   if(_data.empty()) {
-    return;
+    return false;
   }
 
   auto ret = _data.front();
   _data.erase(_data.begin());
-  size_t tmp = _deserialize(msg, std::get<0>(ret), std::get<1>(ret));
+  return std::get<1>(ret) == _deserialize(msg, std::get<0>(ret), std::get<1>(ret));
 }

@@ -15,7 +15,7 @@ USEMODULE += rcl
 USEMODULE += rclc
 USEMODULE += rmw
 
-RMW += rmw_ndn
+RMW ?= rmw_ndn
 USEMODULE += $(RMW)
 
 USEMODULE += rosidl_generator_c

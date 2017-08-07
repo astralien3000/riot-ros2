@@ -69,9 +69,7 @@ rmw_take_with_info(
   DEBUG("rmw_take_with_info" "\n");
 
   Sub* sub = (Sub*)subscription->data;
-  sub->take(ros_message);
-
-  *taken = true;
+  *taken = sub->take(ros_message);
 
   return RMW_RET_OK;
 }
