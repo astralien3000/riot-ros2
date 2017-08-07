@@ -46,10 +46,7 @@ size_t std_msgs__msg__rosidl_typesupport_test__String_serialize(const void* ros_
     cbor_stream_t stream;
     cbor_init(&stream, (unsigned char*)buffer, buffer_size);
     cbor_clear(&stream);
-    ret += 
-        cbor_serialize_byte_stringl(&stream, msg->data.data, msg->data.size);
-    //printf("%i\n", (int)ret);
-    //cbor_stream_decode(&stream);
+    ret += cbor_serialize_byte_stringl(&stream, msg->data.data, msg->data.size);
     return ret;
 }
 
@@ -58,16 +55,10 @@ size_t std_msgs__msg__rosidl_typesupport_test__String_deserialize(void* ros_mess
     size_t ret = 0;
     cbor_stream_t stream;
     cbor_init(&stream, (unsigned char*)buffer, buffer_size);
-    //cbor_stream_print(&stream);
-    stream.pos = stream.size;
-    //printf("%i ; %i\n", (int)stream.size, (int)stream.pos);
-    //cbor_stream_decode(&stream);
-    msg->data.data = malloc(sizeof(char)*64);
-    msg->data.capacity = 64;
-    
-    ret += 
-        msg->data.size = cbor_deserialize_byte_string(&stream, ret, msg->data.data, msg->data.capacity);
-    //printf("%s, %i, %i\n", msg->data.data, msg->data.size, msg->data.capacity);
+    stream.pos = buffer_size;
+    msg->data.capacity = buffer_size;
+    msg->data.data = realloc(msg->data.data, sizeof(char)*buffer_size);
+    ret += msg->data.size = cbor_deserialize_byte_string(&stream, ret, msg->data.data, msg->data.capacity);
     return ret;
 }
 

@@ -200,21 +200,20 @@ print("    cbor_init(&stream, (unsigned char*)buffer, buffer_size);")
 print("    cbor_clear(&stream);")
 for index, field in enumerate(spec.fields):
     if field.type.is_primitive_type() and not field.type.is_array:
-        print("    ret += ");
         if field.type.type == "string":
-            print("        cbor_serialize_byte_stringl(&stream, msg->%s.data, msg->%s.size);" % (field.name, field.name));
+            print("    ret += cbor_serialize_byte_stringl(&stream, msg->%s.data, msg->%s.size);" % (field.name, field.name));
         elif field.type.type == "int32":
-            print("        cbor_serialize_int(&stream, msg->%s);" % field.name);
+            print("    ret += cbor_serialize_int(&stream, msg->%s);" % field.name);
         elif field.type.type == "uint32":
-            print("        cbor_serialize_int(&stream, (int)msg->%s);" % field.name);
+            print("    ret += cbor_serialize_int(&stream, (int)msg->%s);" % field.name);
         elif field.type.type == "int64":
-            print("        cbor_serialize_int64_t(&stream, msg->%s);" % field.name);
+            print("    ret += cbor_serialize_int64_t(&stream, msg->%s);" % field.name);
         elif field.type.type == "uint64":
-            print("        cbor_serialize_uint64_t(&stream, msg->%s);" % field.name);
+            print("    ret += cbor_serialize_uint64_t(&stream, msg->%s);" % field.name);
         else:
-            print("        0;// msg->%s : NOT SUPPORTED !" % field.name);
+            print("    (void)msg;// msg->%s : (%s) NOT SUPPORTED !" % (field.name, field.type.type));
     else:
-        print("    // msg->%s : NOT SUPPORTED !" % field.name);
+        print("    (void)msg;// msg->%s : NOT SUPPORTED !" % field.name);
 print("    return ret;");
 }@
 }
@@ -229,24 +228,25 @@ print("    %s__%s__%s* msg = ros_message;" % (spec.base_type.pkg_name, subfolder
 print("    size_t ret = 0;");
 print("    cbor_stream_t stream;")
 print("    cbor_init(&stream, (unsigned char*)buffer, buffer_size);")
-print("    cbor_stream_decode(&stream);")
+print("    stream.pos = buffer_size;")
 for index, field in enumerate(spec.fields):
     if field.type.is_primitive_type() and not field.type.is_array:
-        print("    ret += ");
         if field.type.type == "string":
-            print("        cbor_deserialize_byte_string(&stream, ret, msg->%s.data, msg->%s.capacity);" % (field.name, field.name));
+            print("    msg->%s.capacity = buffer_size;" % field.name);
+            print("    msg->%s.data = realloc(msg->%s.data, sizeof(char)*buffer_size);" % (field.name, field.name));
+            print("    ret += msg->%s.size = cbor_deserialize_byte_string(&stream, ret, msg->%s.data, msg->%s.capacity);" % (field.name, field.name, field.name));
         elif field.type.type == "int32":
-            print("        cbor_deserialize_int(&stream, ret, &msg->%s);" % field.name);
+            print("    ret += cbor_deserialize_int(&stream, ret, &msg->%s);" % field.name);
         elif field.type.type == "uint32":
-            print("        cbor_deserialize_int(&stream, ret, (int*)&msg->%s);" % field.name);
+            print("    ret += cbor_deserialize_int(&stream, ret, (int*)&msg->%s);" % field.name);
         elif field.type.type == "int64":
-            print("        cbor_deserialize_int64_t(&stream, ret, &msg->%s);" % field.name);
+            print("    ret += cbor_deserialize_int64_t(&stream, ret, &msg->%s);" % field.name);
         elif field.type.type == "uint64":
-            print("        cbor_deserialize_uint64_t(&stream, ret, &msg->%s);" % field.name);
+            print("    ret += cbor_deserialize_uint64_t(&stream, ret, &msg->%s);" % field.name);
         else:
-            print("        0;// msg->%s : NOT SUPPORTED !" % field.name);
+            print("    (void)msg;// msg->%s : (%s) NOT SUPPORTED !" % (field.name, field.type.type));
     else:
-        print("    // msg->%s : NOT SUPPORTED !" % field.name);
+        print("    (void)msg;// msg->%s : NOT SUPPORTED !" % field.name);
 print("    return ret;");
 }@
 }
