@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>rmw_mqtt</name>
+  <version>0.0.0</version>
+  <description>Implement the ROS middleware interface using RTI Connext static code generation in C++.</description>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_cmake</buildtool_depend>
+
+  <buildtool_export_depend>ament_cmake</buildtool_export_depend>
+  <buildtool_export_depend>rosidl_cmake</buildtool_export_depend>
+
+  <build_depend>rmw</build_depend>
+  <build_depend>rosidl_generator_c</build_depend>
+  <build_depend>rosidl_typesupport_test</build_depend>
+
+  <build_export_depend>rosidl_generator_c</build_export_depend>
+  <build_export_depend>rosidl_typesupport_test</build_export_depend>
+
+  <exec_depend>rmw</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
