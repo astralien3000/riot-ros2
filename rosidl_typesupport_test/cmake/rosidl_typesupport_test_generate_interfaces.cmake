@@ -97,7 +97,7 @@ add_custom_command(
   COMMAND ${PYTHON_EXECUTABLE} ${rosidl_typesupport_test_BIN}
   --generator-arguments-file "${generator_arguments_file}"
   DEPENDS ${target_dependencies}
-  COMMENT "Generating C introspection for ROS interfaces"
+  COMMENT "Generating C typesupport_test for ROS interfaces"
   VERBATIM
 )
 
@@ -114,37 +114,10 @@ list(APPEND _generated_msg_header_files "${_visibility_control_file}")
 
 set(_target_suffix "__rosidl_typesupport_test")
 
-add_library(${rosidl_generate_interfaces_TARGET}${_target_suffix} SHARED
-  ${_generated_msg_header_files} ${_generated_msg_source_files}
-  ${_generated_srv_header_files} ${_generated_srv_source_files})
-if(rosidl_generate_interfaces_LIBRARY_NAME)
-  set_target_properties(${rosidl_generate_interfaces_TARGET}${_target_suffix}
-    PROPERTIES OUTPUT_NAME "${rosidl_generate_interfaces_LIBRARY_NAME}${_target_suffix}")
-endif()
-if(NOT WIN32)
-  set_target_properties(${rosidl_generate_interfaces_TARGET}${_target_suffix} PROPERTIES
-    COMPILE_FLAGS "-std=c11 -Wall -Wextra")
-endif()
-if(WIN32)
-  target_compile_definitions(${rosidl_generate_interfaces_TARGET}${_target_suffix}
-    PRIVATE "ROSIDL_BUILDING_DLL")
-  target_compile_definitions(${rosidl_generate_interfaces_TARGET}${_target_suffix}
-    PRIVATE "ROSIDL_GENERATOR_C_BUILDING_DLL_${PROJECT_NAME}")
-endif()
-target_include_directories(${rosidl_generate_interfaces_TARGET}${_target_suffix}
-  PUBLIC
-  ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_c
-  ${CMAKE_CURRENT_BINARY_DIR}/rosidl_typesupport_test
+add_custom_target(${rosidl_generate_interfaces_TARGET}${_target_suffix} ALL
+  DEPENDS ${_generated_msg_header_files} ${_generated_msg_source_files}
+          ${_generated_srv_header_files} ${_generated_srv_source_files}
 )
-target_link_libraries(${rosidl_generate_interfaces_TARGET}${_target_suffix}
-  ${rosidl_generate_interfaces_TARGET}__rosidl_generator_c)
-ament_target_dependencies(${rosidl_generate_interfaces_TARGET}${_target_suffix}
-  "rosidl_typesupport_test")
-foreach(_pkg_name ${rosidl_generate_interfaces_DEPENDENCY_PACKAGE_NAMES})
-  ament_target_dependencies(
-    ${rosidl_generate_interfaces_TARGET}${_target_suffix}
-    ${_pkg_name})
-endforeach()
 
 add_dependencies(
   ${rosidl_generate_interfaces_TARGET}
@@ -158,42 +131,19 @@ if(NOT rosidl_generate_interfaces_SKIP_INSTALL)
       DESTINATION "include/${PROJECT_NAME}/msg"
     )
   endif()
-  if(NOT _generated_srv_header_files STREQUAL "")
+  if(NOT _generated_msg_source_files STREQUAL "")
     install(
-      FILES ${_generated_srv_header_files}
-      DESTINATION "include/${PROJECT_NAME}/srv"
+      FILES ${_generated_msg_source_files}
+      DESTINATION "${rosidl_generate_interfaces_TARGET}${_target_suffix}"
     )
   endif()
-  install(
-    TARGETS ${rosidl_generate_interfaces_TARGET}${_target_suffix}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-  )
-  ament_export_libraries(${rosidl_generate_interfaces_TARGET}${_target_suffix})
-endif()
 
-if(BUILD_TESTING AND rosidl_generate_interfaces_ADD_LINTER_TESTS)
-  if(NOT _generated_msg_header_files STREQUAL "" OR NOT _generated_srv_header_files STREQUAL "")
-    find_package(ament_cmake_cppcheck REQUIRED)
-    ament_cppcheck(
-      TESTNAME "cppcheck_rosidl_typesupport_test"
-      "${_output_path}")
+  set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${rosidl_generate_interfaces_TARGET}${_target_suffix}/Makefile")
+  file(WRITE  "${MAKEFILE_PATH}" "MODULE = ${rosidl_generate_interfaces_TARGET}${_target_suffix}\n")
+  file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
 
-    find_package(ament_cmake_cpplint REQUIRED)
-    get_filename_component(_cpplint_root "${_output_path}" DIRECTORY)
-    ament_cpplint(
-      TESTNAME "cpplint_rosidl_typesupport_test"
-      # the generated code might contain longer lines for templated types
-      MAX_LINE_LENGTH 999
-      ROOT "${_cpplint_root}"
-      "${_output_path}")
+  set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${rosidl_generate_interfaces_TARGET}${_target_suffix}/Makefile.include")
+  file(WRITE  "${MAKEFILE_INCLUDE_PATH}" "")
+  file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += cbor\n")
 
-    find_package(ament_cmake_uncrustify REQUIRED)
-    ament_uncrustify(
-      TESTNAME "uncrustify_rosidl_typesupport_test"
-      # the generated code might contain longer lines for templated types
-      MAX_LINE_LENGTH 999
-      "${_output_path}")
-  endif()
 endif()
