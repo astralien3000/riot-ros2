@@ -46,11 +46,11 @@ set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile.incl
 file(WRITE  "${MAKEFILE_INCLUDE_PATH}" "")
 foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
   foreach(idir ${${dep}_INCLUDE_DIRS})
-    file(APPEND "${MAKEFILE_PATH}" "INCLUDES += -I${idir}\n")
+    file(APPEND "${MAKEFILE_INCLUDE_PATH}" "INCLUDES += -I${idir}\n")
   endforeach()
   file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${dep}\n")
   file(APPEND "${MAKEFILE_INCLUDE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${dep}/Makefile.include\n")
-  file(APPEND "${MAKEFILE_PATH}" "DIRS += ${CMAKE_INSTALL_PREFIX}/${dep}\n")
+  file(APPEND "${MAKEFILE_INCLUDE_PATH}" "DIRS += ${CMAKE_INSTALL_PREFIX}/${dep}\n")
 endforeach()
 
 ament_package(
