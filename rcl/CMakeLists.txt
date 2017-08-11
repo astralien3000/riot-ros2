@@ -51,6 +51,7 @@ foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
   file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${dep}\n")
   file(APPEND "${MAKEFILE_INCLUDE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${dep}/Makefile.include\n")
 endforeach()
+file(APPEND "${MAKEFILE_INCLUDE_PATH}" "INCLUDES += -I${CMAKE_INSTALL_PREFIX}/${dep}/rcl/stdatomic_helper/gcc\n")
 
 ament_package(
   CONFIG_EXTRAS rcl-extras.cmake
