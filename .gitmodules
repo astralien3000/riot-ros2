@@ -1,0 +1,6 @@
+[submodule "riot/RIOT"]
+	path = riot/RIOT
+	url = https://github.com/astralien3000/RIOT.git
+[submodule "riot_ndn/ndn-riot"]
+	path = riot_ndn/ndn-riot
+	url = https://github.com/astralien3000/ndn-riot.git
