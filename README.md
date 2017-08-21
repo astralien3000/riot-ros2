@@ -10,11 +10,9 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 | Layers | ROS2 | RIOT-ROS2 |
 |-|-|-|
 | RCLC (ROS Client Library for C) | API only | implemented, following the API |
-| RCLCPP (ROS Client Library for C++) | implemented | only supported on `native` board |
-| RCLPY (ROS Client Library for Python) | implemented | not supported |
 | RCL (ROS Client Library) | implemented | `timer.c` modified |
 | RMW (ROS MiddleWare) | Based on DDS | 2 implementations : `ndn-riot` and `emcute` |
-| rosidl | DDS, introspection | only introspection |
+| rosidl | DDS, introspection | custom, serlialisation based on cbor |
 
 # Examples
 
@@ -23,58 +21,64 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 
 # Usage
 
+## Requirements
+
+Only Linux (preferred) and OSX (compilation only) are supported.
+
+This project needs ROS2 beta1 to be installed on your computer, please, follow the [official installation instructions](https://github.com/ros2/ros2/wiki/Installation).
+
+```
+cd ~/ros2_ws
+. ./install/setup.bash
+```
+
+Also, you need to create an overlay workspace [as described in this tutorial](https://github.com/ros2/ros2/wiki/Ament-Tutorial) : 
+
+```
+mkdir -p ~/ros2_riot_ws/src
+```
+
 ## Clone the project
 
 ```sh
+cd ~/ros2_riot_ws/src
 git clone https://github.com/astralien3000/riot-ros2.git --recursive
-cd riot-ros2
 ```
 
-Despite there is a Makefile at the root of the repository, you cannot call `make`.
+## First build phase
 
-## Linux example : NDN
+ROS2 and RIOT have 2 very different build systems.
+To be able to use them together, you need to build applications in 2 steps : 
+using Ament, as a ROS2 user would normally do, 
+and then compiling each application for it's target microcontroller with RIOT's Makefiles.
+
+First phase : 
+
+```sh
+cd ~/ros2_riot_ws
+## --symlink-install is very important, second step would fail otherwise
+ament build --symlink-install
+```
+
+## Second build phase
+
+### Example
 
 First, setup the tap interface :
 ```sh
+cd ~/ros2_riot_ws
 # Don't use twice
-./RIOT/dist/tools/tapsetup/tapsetup
+./install/RIOT/dist/tools/tapsetup/tapsetup
 ```
 
 On a first terminal : 
 ```sh
-(cd examples/talker_c && make PORT=tap0 all term)
+(cd install/talker_c && make PORT=tap0 all term)
 ```
 
 On a second terminal : 
 ```sh
-(cd examples/listener_c && make PORT=tap1 all term)
-```
-
-## Linux example : emcute (MQTT-SN)
-
-[A more complete tutorial about emcute usage](https://github.com/RIOT-OS/RIOT/tree/3d48eee0955e9452662af3b732516f8437f53092/examples/emcute)
-
-On a first terminal, setup the tap interface :
-```sh
-# Don't use twice
-./RIOT/dist/tools/tapsetup/tapsetup
-sudo ip a a fec0:affe::1/64 dev tapbr0
-```
-
-Compile and run the broker :
-```sh
-(cd mosquitto.rsmb/rsmb/src/ && make)
-(./mosquitto.rsmb/rsmb/src/broker_mqtts broker.conf)
-```
-
-On a second terminal :
-```sh
-(cd examples/talker_c && make RMW=rmw_mqtt PORT=tap0 MYADDR=fec0:affe::2 all term)
-```
-
-On a third terminal :
-```sh
-(cd examples/listener_c && make RMW=rmw_mqtt PORT=tap1 MYADDR=fec0:affe::3 all term)
+(cd install/listener_c && make PORT=tap1 all term)
 ```
 
 # Troubleshooting
