@@ -4,7 +4,7 @@ This project enables ROS2 to run on microcontrollers using the RIOT Operating Sy
 
 # Architecture
 
-ROS2 is composed of sevral layers. Some have been modified to be able to run on microcontroller.
+ROS2 is composed of several layers. Some have been modified to be able to run on microcontroller.
 Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS2 stack :
 
 | Layers | ROS2 | RIOT-ROS2 |
@@ -23,9 +23,9 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 
 ## Requirements
 
-Only Linux (preferred) and OSX (compilation only) are supported.
+Only Linux (preferred) and OSX (missing features) are supported.
 
-This project needs ROS2 beta1 to be installed on your computer, please, follow the [official installation instructions](https://github.com/ros2/ros2/wiki/Installation).
+This project needs **ROS2 beta1** to be installed on your computer, please, follow the [official installation instructions](https://github.com/ros2/ros2/wiki/Installation).
 
 ```
 cd ~/ros2_ws
