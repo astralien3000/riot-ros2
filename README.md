@@ -23,7 +23,16 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 
 ## Requirements
 
-Only Linux (preferred) and OSX (missing features) are supported. Please, follow the [ros2 official installation instructions](https://github.com/ros2/ros2/wiki/Installation) for requirements.
+### Ubuntu (tested on 16.04)
+
+```
+sudo apt install cmake git python3-pip python3-empy g++-multilib
+pip3 install vcstool
+```
+
+### Others
+
+Only Linux (preferred) and OSX (missing features) are supported. Please, follow the requirements for [ros2 official installation instructions](https://github.com/ros2/ros2/wiki/Installation).
 
 ## Get the sources
 
