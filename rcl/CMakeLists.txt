@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(rcl)
 
 find_package(ament_cmake REQUIRED)
-find_package(rcl_interfaces REQUIRED)
+#find_package(rcl_interfaces REQUIRED)
 find_package(rmw REQUIRED)
 
 include_directories(include)
@@ -14,7 +14,7 @@ if(NOT WIN32)
 endif()
 
 ament_export_dependencies(ament_cmake)
-ament_export_dependencies(rcl_interfaces)
+#ament_export_dependencies(rcl_interfaces)
 ament_export_dependencies(rmw)
 
 ament_export_include_directories(include)
