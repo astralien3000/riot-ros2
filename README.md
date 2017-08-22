@@ -23,26 +23,16 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 
 ## Requirements
 
-Only Linux (preferred) and OSX (missing features) are supported.
+Only Linux (preferred) and OSX (missing features) are supported. Please, follow the [ros2 official installation instructions](https://github.com/ros2/ros2/wiki/Installation) for requirements.
 
-This project needs **ROS2 beta1** to be installed on your computer, please, follow the [official installation instructions](https://github.com/ros2/ros2/wiki/Installation).
-
-```
-cd ~/ros2_ws
-. ./install/setup.bash
-```
-
-Also, you need to create an overlay workspace [as described in this tutorial](https://github.com/ros2/ros2/wiki/Ament-Tutorial) : 
+## Get the sources
 
 ```
 mkdir -p ~/ros2_riot_ws/src
-```
-
-## Clone the project
-
-```sh
-cd ~/ros2_riot_ws/src
-git clone https://github.com/astralien3000/riot-ros2.git --recursive
+cd ~/ros2_riot_ws
+wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
+vcs import src < riot-ros2.repos
+(cd src/ros2/riot/ && git submodule update --init)
 ```
 
 ## First build phase
@@ -55,9 +45,8 @@ and then compiling each application for it's target microcontroller with RIOT's 
 First phase : 
 
 ```sh
-cd ~/ros2_riot_ws
 ## --symlink-install is very important, second step would fail otherwise
-ament build --symlink-install
+./src/ament/ament_tools/scripts/ament.py build --symlink-install
 ```
 
 ## Second build phase
@@ -66,7 +55,6 @@ ament build --symlink-install
 
 First, setup the tap interface :
 ```sh
-cd ~/ros2_riot_ws
 # Don't use twice
 ./install/RIOT/dist/tools/tapsetup/tapsetup
 ```
