@@ -15,7 +15,8 @@ find_package(rosidl_typesupport_test REQUIRED)
 ament_export_dependencies(
   rmw
   rosidl_generator_c
-  rosidl_typesupport_test)
+  rosidl_typesupport_test
+)
 
 install(
   DIRECTORY src/
