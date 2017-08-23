@@ -4,9 +4,6 @@ project(riot_ndn)
 
 find_package(ament_cmake REQUIRED)
 
-install(
-  DIRECTORY ndn-riot
-  DESTINATION .
-)
+install(FILES ndn-riot)
 
 ament_package()
