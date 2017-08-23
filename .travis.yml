@@ -1,0 +1,40 @@
+sudo: required
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - python3-pip
+    - g++-5-multilib
+    - gcc-5
+    - g++-5
+    - linux-libc-dev:i386
+before_install:
+ - pip3 install vcstool
+ - pip3 install empy
+ - sudo apt-get remove g++ gcc
+ - sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
+ - sudo ln -s /usr/bin/g++-5 /usr/bin/g++
+ - wget http://www.cmake.org/files/v3.9/cmake-3.9.0.tar.gz
+ - tar xf cmake-3.9.0.tar.gz
+ - cd cmake-3.9.0
+ - ./configure
+ - make
+ - sudo make install
+install:
+ - mkdir -p ~/ros2_riot_ws/src
+ - cd ~/ros2_riot_ws
+ - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
+ - vcs import src < riot-ros2.repos
+ - (cd src/ros2/riot/ && git submodule update --init)
+script:
+ - ./src/ament/ament_tools/scripts/ament.py build --symlink-install
+ - ./install/RIOT/dist/tools/tapsetup/tapsetup
+ - (cd install/talker_c && make RMW=rmw_ndn)
+ - (cd install/listener_c && make RMW=rmw_ndn)
+ - (cd install/pub_int32_c && make RMW=rmw_ndn)
+ - (cd install/sub_int32_c && make RMW=rmw_ndn)
+ - (cd install/talker_c && make RMW=rmw_mqtt)
+ - (cd install/listener_c && make RMW=rmw_mqtt)
+ - (cd install/pub_int32_c && make RMW=rmw_mqtt)
+ - (cd install/sub_int32_c && make RMW=rmw_mqtt)
