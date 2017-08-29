@@ -11,7 +11,7 @@ extern "C" {
 #include <rclc/rclc.h>
 }
 
-#include <std_msgs/msg/string.h>
+#include <std_msgs/msg/int32.h>
 
 int main(void) {
   static int argc = 0;
@@ -24,21 +24,15 @@ int main(void) {
 
   rclc_init(argc, argv);
   rclc_node_t* node = rclc_create_node("talker");
-  rclc_publisher_t* pub = rclc_create_publisher(node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, String), "chatter", 1);
+  rclc_publisher_t* pub = rclc_create_publisher(node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, Int32), "chatter", 1);
 
-  std_msgs__msg__String msg;
-  char buff[64] = {0};
-  msg.data.data = buff;
-  msg.data.capacity = sizeof(buff);
-  msg.data.size = 0;
+  std_msgs__msg__Int32 msg;
+  msg.data = 0;
 
   while (rclc_ok()) {
-    msg.data.size = snprintf(msg.data.data, msg.data.capacity, "%i", (int)(100*Gyro::instance().angle().get()));
-    if(msg.data.size > msg.data.capacity) msg.data.size = 0;
+    msg.data = (int)(100*Gyro::instance().angle().get());
 
-    if(msg.data.data[msg.data.size] == '\0') {
-      printf("Publishing: '%s'\n", msg.data.data);
-    }
+    printf("Publishing: %i\n", (int)msg.data);
 
     rclc_publish(pub, (const void*)&msg);
 
