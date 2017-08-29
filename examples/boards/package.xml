@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>custom_boards</name>
+  <version>0.0.0</version>
+  <description>Example code</description>
+  <maintainer email="astralien3000@yahoo.fr">Loïc Dauphin</maintainer>
+  <license>GPL</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
