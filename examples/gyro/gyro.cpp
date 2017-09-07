@@ -16,12 +16,16 @@ void Gyro::Updater::update(void) {
   if(state() == RUN) {
     l3g4200d_data_t data = { 0,0,0 };
     l3g4200d_read(&dev, &data);
-    _angle += data.acc_z;
+    x_angle += data.acc_x;
+    y_angle += data.acc_y;
+    z_angle += data.acc_z;
   }
 }
 
 Gyro::Gyro(void)
-  : _angle(0) {
+  : x_angle(0)
+  , y_angle(0)
+  , z_angle(0){
   if (l3g4200d_init(&dev, GYRO_I2C, GYRO_ADDR, GYRO_INT, GYRO_DR, GYRO_MODE, GYRO_SCALE) != 0) {
     setState(ERROR);
     return;

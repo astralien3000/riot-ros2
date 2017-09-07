@@ -3,7 +3,7 @@ project(gyro)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclc REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(custom_msgs REQUIRED)
 
 find_package(rosidl_typesupport_test REQUIRED)
 

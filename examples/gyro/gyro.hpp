@@ -10,7 +10,6 @@
 
 class Gyro : public Singleton<Gyro>, public Service {
 private:
-  class Angle;
   class Updater;
 
 private:
@@ -19,27 +18,42 @@ private:
   };
 
 protected:
-  int32_t _angle;
+  int32_t x_angle;
+  int32_t y_angle;
+  int32_t z_angle;
+
   Config _config;
 
 public:
   Gyro(void);
 
 public:
-  inline Angle& angle(void) { return *(Angle*)this; }
+  inline float getXAngle(void) {
+    return x_angle * M_PI / _config.gyro2rad;
+  }
+
+  inline void putXAngle(float val) {
+    x_angle = (val / M_PI) * _config.gyro2rad;
+  }
+
+  inline float getYAngle(void) {
+    return y_angle * M_PI / _config.gyro2rad;
+  }
+
+  inline void putYAngle(float val) {
+    y_angle = (val / M_PI) * _config.gyro2rad;
+  }
+
+  inline float getZAngle(void) {
+    return z_angle * M_PI / _config.gyro2rad;
+  }
+
+  inline void putZAngle(float val) {
+    z_angle = (val / M_PI) * _config.gyro2rad;
+  }
+
   inline Updater& updater(void) { return *(Updater*)this; }
   inline Config& config(void) { return _config; }
-};
-
-class Gyro::Angle : private Gyro, public Input<float>, public Output<float> {
-public:
-  inline float get(void) {
-    return _angle * M_PI / _config.gyro2rad;
-  }
-
-  inline void put(float val) {
-    _angle = (val / M_PI) * _config.gyro2rad;
-  }
 };
 
 class Gyro::Updater : private Gyro {

@@ -9,17 +9,18 @@ extern "C" {
 #include <rclc/rclc.h>
 }
 
-#include <std_msgs/msg/int32.h>
+#include <custom_msgs/msg/gyro.h>
 
 void chatter_callback(const void* v_msg)
 {
-  const std_msgs__msg__Int32* msg = (const std_msgs__msg__Int32*)v_msg;
-  printf("I heard: [%i]\n", (int)msg->data);
+  const custom_msgs__msg__Gyro* msg = (const custom_msgs__msg__Gyro*)v_msg;
+  printf("I heard: [ %i %i %i ]\n", (int)msg->x_angle, (int)msg->y_angle, (int)msg->z_angle);
 
-  int angle = msg->data;
+  int angle = msg->z_angle;
+  int dist = msg->x_angle;
 
-  Motors::instance().left().put(angle);
-  Motors::instance().right().put(-angle);
+  Motors::instance().left().put(dist+angle);
+  Motors::instance().right().put(dist-angle);
 }
 
 int main(void) {
@@ -31,7 +32,7 @@ int main(void) {
   rclc_init(argc, argv);
   rclc_node_t* node = rclc_create_node("listener");
   rclc_subscription_t* sub =
-      rclc_create_subscription(node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, Int32), "chatter", chatter_callback, 1, false);
+      rclc_create_subscription(node, ROSIDL_GET_MSG_TYPE_SUPPORT(custom_msgs, Gyro), "chatter", chatter_callback, 1, false);
 
   rclc_spin_node(node);
 
