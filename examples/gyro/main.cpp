@@ -2,6 +2,9 @@
 #include <math.h>
 #include <string.h>
 
+#include <board.h>
+#include <periph/gpio.h>
+
 #include <xtimer.h>
 
 #include "task.h"
@@ -28,15 +31,24 @@ int main(void) {
 
   custom_msgs__msg__Gyro msg;
   msg.x_angle = 0;
-  msg.y_angle = 0;
+  //msg.y_angle = 0;
   msg.z_angle = 0;
 
+  gpio_init(BUTTON_GPIO, GPIO_IN_PU);
+
   while (rclc_ok()) {
+    if(!gpio_read(BUTTON_GPIO)) {
+      Gyro::instance().putXAngle(0);
+      Gyro::instance().putYAngle(0);
+      Gyro::instance().putZAngle(0);
+      LED0_TOGGLE;
+    }
+
     msg.x_angle = (int)(100*Gyro::instance().getXAngle());
-    msg.y_angle = (int)(100*Gyro::instance().getYAngle());
+    //msg.y_angle = (int)(100*Gyro::instance().getYAngle());
     msg.z_angle = (int)(100*Gyro::instance().getZAngle());
 
-    printf("Publishing: [ %i %i %i ]\n", (int)msg.x_angle, (int)msg.y_angle, (int)msg.z_angle);
+    printf("Publishing: [ %i %i %i ]\n", (int)msg.z_angle, (int)msg.z_angle, (int)msg.z_angle);
 
     rclc_publish(pub, (const void*)&msg);
 

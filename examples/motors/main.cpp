@@ -14,7 +14,7 @@ extern "C" {
 void chatter_callback(const void* v_msg)
 {
   const custom_msgs__msg__Gyro* msg = (const custom_msgs__msg__Gyro*)v_msg;
-  printf("I heard: [ %i %i %i ]\n", (int)msg->x_angle, (int)msg->y_angle, (int)msg->z_angle);
+  printf("I heard: [ %i %i %i ]\n", (int)msg->z_angle, (int)msg->z_angle, (int)msg->z_angle);
 
   int angle = msg->z_angle;
   int dist = msg->x_angle;
