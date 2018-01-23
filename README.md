@@ -63,20 +63,38 @@ vcs import src < riot-ros2.repos
 (cd src/ros2/riot/ && git submodule update --init)
 ```
 
-## First build phase
+## Build the tools
 
-ROS2 and RIOT have 2 very different build systems.
-To be able to use them together, you need to build applications in 2 steps : 
-using Ament, as a ROS2 user would normally do, 
-and then compiling each application for it's target microcontroller with RIOT's Makefiles.
-
-First phase : 
+`riot-ros2` is meant for cross-compilation.
+But some ROS2 tools need to be compiled for your current architecture.
 
 ```sh
+mkdir -p ~/ros2_riot_ws/tools/src
+cd ~/ros2_riot_ws/tools
+wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2-tools.repos
+vcs import src < riot-ros2-tools.repos
 ./src/ament/ament_tools/scripts/ament.py build --symlink-install
 ```
 
-## Second build phase
+Once built, you can run this command to use `ament` and other ROS2 tools.
+(This is only needed for the first build)
+
+```sh
+. ~/ros2_riot_ws/tools/install/setup.bash
+```
+
+## Two build phase
+
+ROS2 and RIOT have 2 very different build systems. To be able to use them together, you need to build applications in 2 steps : using Ament, as a ROS2 user would normally do, and then compiling each application for it's target microcontroller with RIOT's Makefiles.
+
+First phase :
+
+```sh
+cd ~/ros2_riot_ws
+ament build --symlink-install
+```
+
+After that, you can go to the second build phase.
 
 ### Linux example : NDN
 
