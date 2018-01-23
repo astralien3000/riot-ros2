@@ -1,25 +1,5 @@
 repositories:
-  ament/ament_tools:
-    type: git
-    url: https://github.com/ament/ament_tools.git
-    version: release-beta1
-  ament/ament_package:
-    type: git
-    url: https://github.com/ament/ament_package.git
-    version: release-beta1
-  ament/osrf_pycommon:
-    type: git
-    url: https://github.com/osrf/osrf_pycommon.git
-    version: 8aaf12c5538ddc1aa5a6eba912c518e4e68f717f
-  ament/ament_cmake:
-    type: git
-    url: https://github.com/ament/ament_cmake.git
-    version: release-beta1
-  ros2/rosidl:
-    type: git
-    url: https://github.com/astralien3000/rosidl.git
-    version: master
-  ros2/riot:
+  ros2:
     type: git
     url: https://github.com/astralien3000/riot-ros2.git
     version: master
