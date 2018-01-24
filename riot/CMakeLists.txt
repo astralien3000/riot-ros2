@@ -4,6 +4,6 @@ project(riot)
 
 find_package(ament_cmake REQUIRED)
 
-install(FILES RIOT)
+install(DIRECTORY RIOT DESTINATION . USE_SOURCE_PERMISSIONS)
 
 ament_package()
