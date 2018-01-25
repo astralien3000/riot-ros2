@@ -13,7 +13,7 @@ find_package(rosidl_generator_c REQUIRED)
 find_package(rosidl_typesupport_test REQUIRED)
 
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "")
-_add_library(rmw_ndn STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
+add_library(rmw_ndn STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
 
 ament_export_dependencies(
   rmw

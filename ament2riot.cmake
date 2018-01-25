@@ -143,11 +143,6 @@ macro(add_library target)
     set(${target}_sources "")
     foreach(arg ${args_UNPARSED_ARGUMENTS})
         # Copy source to the RIOT module
-        if(IS_ABSOLUTE ${arg})
-            set(src_file ${arg})
-        else()
-            set(src_file ${CMAKE_CURRENT_SOURCE_DIR}/${arg})
-        endif()
         install(FILES ${src_file} DESTINATION ${target})
 
         # Add the source to ${target}_sources
@@ -184,23 +179,3 @@ macro(add_library target)
     # Add custom target to trigger sources generation if any
     add_custom_target(${target}_dummy ALL DEPENDS ${${target}_sources})
 endmacro()
-
-################################################################
-# Replace install
-################################################################
-#
-# install(TARGETS targets... [EXPORT <export-name>]
-#         [[ARCHIVE|LIBRARY|RUNTIME|FRAMEWORK|BUNDLE|
-#           PRIVATE_HEADER|PUBLIC_HEADER|RESOURCE]
-#          [DESTINATION <dir>]
-#          [PERMISSIONS permissions...]
-#          [CONFIGURATIONS [Debug|Release|...]]
-#          [COMPONENT <component>]
-#          [OPTIONAL] [EXCLUDE_FROM_ALL]
-#          [NAMELINK_ONLY|NAMELINK_SKIP]
-#         ] [...]
-#         [INCLUDES DESTINATION [<dir> ...]]
-#         )
-#
-################################################################
-
