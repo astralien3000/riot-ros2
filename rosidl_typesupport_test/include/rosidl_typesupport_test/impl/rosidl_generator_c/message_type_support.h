@@ -21,6 +21,7 @@
 // Provides the definition of the rosidl_message_type_support_t struct.
 #include <rosidl_generator_c/message_type_support_struct.h>
 
+#if 0
 /* These macros are used to create the symbols of the get_message_type_support
  * function for a specific message type. The library of the message package
  * which defines a given message will provide the symbol to which this macro
@@ -40,5 +41,6 @@
 
 #define ROSIDL_GET_TYPE_SUPPORT_FUNCTION(PkgName, MsgSubfolder, MsgName) \
   rosidl_typesupport_test_get_message__ ## PkgName ## __ ## MsgSubfolder ## __ ## MsgName
+#endif
 
 #endif  // ROSIDL_TYPESUPPORT_INTROSPECTION_C__IMPL__ROSIDL_GENERATOR_C__MESSAGE_TYPE_SUPPORT_H_

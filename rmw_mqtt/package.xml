@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="2">
+<package format="3">
   <name>rmw_mqtt</name>
   <version>0.0.0</version>
   <description>Implement the ROS middleware interface using MQTT.</description>
@@ -21,6 +21,8 @@
   <build_export_depend>rosidl_typesupport_test</build_export_depend>
 
   <exec_depend>rmw</exec_depend>
+
+  <member_of_group>rmw_implementation_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

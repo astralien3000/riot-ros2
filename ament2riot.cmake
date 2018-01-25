@@ -112,6 +112,80 @@ macro(add_executable target)
 endmacro()
 
 ################################################################
+# Replace add_library
+################################################################
+#
+# add_library(<name> [STATIC | SHARED | MODULE]
+#             [EXCLUDE_FROM_ALL]
+#             source1 [source2 ...])
+#
+################################################################
+macro(add_library target)
+    message("[cmake2riot] executing custom add_library command")
+
+    # Parse arguments
+    set(options STATIC SHARED MODULE EXCLUDE_FROM_ALL)
+    set(oneValueArgs "")
+    set(multiValueArgs "")
+    cmake_parse_arguments(args "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Display Warnings for unsupported parameters
+    foreach(opt in ${options})
+        if(args_${opt})
+            message(WARNING "[cmake2riot] ${opt} option is not supported")
+        endif()
+    endforeach()
+
+    # Make the directory where the RIOT project will be put
+    file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${target})
+
+    # Foreach source arguments
+    set(${target}_sources "")
+    foreach(arg ${args_UNPARSED_ARGUMENTS})
+        # Copy source to the RIOT module
+        if(IS_ABSOLUTE ${arg})
+            set(src_file ${arg})
+        else()
+            set(src_file ${CMAKE_CURRENT_SOURCE_DIR}/${arg})
+        endif()
+        install(FILES ${src_file} DESTINATION ${target})
+
+        # Add the source to ${target}_sources
+        set(${target}_sources ${${target}_sources} ${arg})
+    endforeach(arg)
+
+    # Hack to get ament-generated *_BUILD_DEPENDS variables
+    #ament_package_xml()
+
+    # Create the RIOT module's Makefile
+    set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${target}/Makefile")
+    file(WRITE  "${MAKEFILE_PATH}" "MODULE = ${PROJECT_NAME}\n")
+    foreach(src ${${target}_sources})
+      file(APPEND "${MAKEFILE_PATH}" "SRC += ${src}\n")
+    endforeach()
+    file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
+
+    # Create the RIOT module's Makefile.include
+    set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${target}/Makefile.include")
+    file(WRITE  "${MAKEFILE_INCLUDE_PATH}" "")
+    foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "DIRS += ${CMAKE_INSTALL_PREFIX}/${dep}\n")
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${dep}\n")
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${dep}/Makefile.include\n")
+    endforeach()
+    foreach(idir ${${PROJECT_NAME}_INCLUDE_DIRS})
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "INCLUDES += -I${idir}\n")
+    endforeach()
+
+    # Add custom target to compile the target
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "")
+    _add_library(${target} STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
+
+    # Add custom target to trigger sources generation if any
+    add_custom_target(${target}_dummy ALL DEPENDS ${${target}_sources})
+endmacro()
+
+################################################################
 # Replace install
 ################################################################
 #
@@ -129,41 +203,4 @@ endmacro()
 #         )
 #
 ################################################################
-macro(install type)
-    if("${type}" STREQUAL "TARGET")
-        message("[cmake2riot] executing custom install(TARGET...) command")
 
-        # Parse arguments
-        set(target_kinds
-            ARCHIVE LIBRARY RUNTIME FRAMEWORK BUNDLE
-            PRIVATE_HEADER PUBLIC_HEADER RESOURCE
-            )
-
-        set(options "")
-        set(oneValueArgs EXPORT)
-        set(multiValueArgs TARGETS ${target_kinds})
-        cmake_parse_arguments(args "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-        # Display Warnings for unsupported parameters
-        set(unsupported_kinds
-            ARCHIVE LIBRARY RUNTIME FRAMEWORK BUNDLE
-            PRIVATE_HEADER PUBLIC_HEADER RESOURCE
-            )
-        foreach(kind in ${unsupported_kinds})
-            if(args_${kind})
-                message(WARNING "[cmake2riot] ${kind} argument is not supported")
-            endif()
-        endforeach(kind)
-
-        # Install native elf files in bin directory
-        foreach(target ${args_TARGETS})
-            _install(
-                PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/cmake2riot/${target}/bin/${BOARD}/${target}.elf
-                DESTINATION bin
-                )
-        endforeach(target)
-    else()
-        message("[cmake2riot] executing normal install(${type}...) command")
-        _install(${type} ${ARGN})
-    endif()
-endmacro()

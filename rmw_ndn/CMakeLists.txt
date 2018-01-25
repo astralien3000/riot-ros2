@@ -12,11 +12,20 @@ find_package(rmw REQUIRED)
 find_package(rosidl_generator_c REQUIRED)
 find_package(rosidl_typesupport_test REQUIRED)
 
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "")
+_add_library(rmw_ndn STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
+
 ament_export_dependencies(
   rmw
   rosidl_generator_c
   rosidl_typesupport_test
 )
+
+configure_rmw_library(rmw_ndn)
+
+register_rmw_implementation(
+  "c:rosidl_typesupport_c:rosidl_typesupport_introspection_c"
+  "cpp:rosidl_typesupport_cpp:rosidl_typesupport_introspection_cpp")
 
 install(
   DIRECTORY src/
