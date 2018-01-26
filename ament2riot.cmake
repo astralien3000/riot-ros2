@@ -120,7 +120,17 @@ endmacro()
 #             source1 [source2 ...])
 #
 ################################################################
-macro(add_library target)
+# Create the RIOT module's Makefile
+set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile")
+file(WRITE "${MAKEFILE_PATH}" "")
+file(APPEND "${MAKEFILE_PATH}" "MODULE = ${PROJECT_NAME}\n")
+file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
+
+# Create the RIOT module's Makefile.include
+set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile.include")
+file(WRITE "${MAKEFILE_INCLUDE_PATH}" "")
+
+function(add_library target)
     message("[cmake2riot] executing custom add_library command")
 
     # Parse arguments
@@ -150,19 +160,22 @@ macro(add_library target)
     endforeach(arg)
 
     # Hack to get ament-generated *_BUILD_DEPENDS variables
-    #ament_package_xml()
+    # Without modifying the variables
+    unset(_AMENT_PACKAGE_NAME)
+    ament_package_xml()
 
-    # Create the RIOT module's Makefile
-    set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${target}/Makefile")
-    file(WRITE  "${MAKEFILE_PATH}" "MODULE = ${PROJECT_NAME}\n")
-    foreach(src ${${target}_sources})
-      file(APPEND "${MAKEFILE_PATH}" "SRC += ${src}\n")
-    endforeach()
-    file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
+    # Fill the RIOT module's Makefile
+    if("${target}" STREQUAL "${PROJECT_NAME}")
+        foreach(src ${${target}_sources})
+            if("${src}" MATCHES ".c$|.cpp$")
+                file(APPEND "${MAKEFILE_PATH}" "SRC += ${src}\n")
+            else()
+                message(WARNING "[cmake2riot] adding a header to library : ${src}")
+            endif()
+        endforeach()
+    endif()
 
-    # Create the RIOT module's Makefile.include
-    set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${target}/Makefile.include")
-    file(WRITE  "${MAKEFILE_INCLUDE_PATH}" "")
+    # Fill the RIOT module's Makefile.include
     foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
       file(APPEND "${MAKEFILE_INCLUDE_PATH}" "DIRS += ${CMAKE_INSTALL_PREFIX}/${dep}\n")
       file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${dep}\n")
@@ -172,10 +185,28 @@ macro(add_library target)
       file(APPEND "${MAKEFILE_INCLUDE_PATH}" "INCLUDES += -I${idir}\n")
     endforeach()
 
+    if(NOT "${target}" STREQUAL "${PROJECT_NAME}")
+        # Create the RIOT sub-module's Makefile
+        set(SUB_MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/${target}/Makefile")
+        file(WRITE  "${SUB_MAKEFILE_PATH}" "MODULE = ${target}\n")
+        foreach(src ${${target}_sources})
+            if("${src}" MATCHES ".c$|.cpp$")
+                file(APPEND "${MAKEFILE_PATH}" "SRC += ${src}\n")
+            else()
+                message(WARNING "[cmake2riot] adding a header to library : ${src}")
+            endif()
+        endforeach()
+        file(APPEND "${SUB_MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
+
+        # Add submodule to module's Makefile.include
+        file(APPEND "${MAKEFILE_INCLUDE_PATH}" "DIRS += ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/${target}\n")
+        file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${target}\n")
+    endif()
+
     # Add custom target to compile the target
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "")
     _add_library(${target} STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
 
     # Add custom target to trigger sources generation if any
     add_custom_target(${target}_dummy ALL DEPENDS ${${target}_sources})
-endmacro()
+endfunction()
