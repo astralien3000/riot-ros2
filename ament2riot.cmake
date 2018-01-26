@@ -206,6 +206,7 @@ function(add_library target)
             endif()
         endforeach()
     endif()
+    file(APPEND "${MAKEFILE_PATH}" "CFLAGS += -DROS_PACKAGE_NAME=\\\"${PROJECT_NAME}\\\"\n")
 
     # Fill the RIOT module's Makefile.include
     foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
