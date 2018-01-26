@@ -152,15 +152,47 @@ function(add_library target)
     # Foreach source arguments
     set(${target}_sources "")
     foreach(arg ${args_UNPARSED_ARGUMENTS})
-        # Copy source to the RIOT module
-        install(FILES ${src_file} DESTINATION ${target})
+        # Search source file
+        if(IS_ABSOLUTE ${arg})
+            set(src ${arg})
+        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${arg})
+            set(src ${arg})
+        elseif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${arg})
+            set(src ${CMAKE_CURRENT_BINARY_DIR}/${arg})
+        else()
+            message(ERROR "Could not find source : ${arg}")
+        endif()
+
+        # Add install rule for source file
+        if("${target}" STREQUAL "${PROJECT_NAME}")
+            install(FILES ${src} DESTINATION ${target})
+        else()
+            install(FILES ${src} DESTINATION ${PROJECT_NAME}/${target})
+        endif()
 
         # Add the source to ${target}_sources
         set(${target}_sources ${${target}_sources} ${arg})
+
+        # Add the source directory to ${target}_src_dirs
+        get_filename_component(dir ${src} DIRECTORY)
+        list(APPEND ${target}_src_dirs ${dir})
     endforeach(arg)
 
+    # Search additional sources files that are not listed in args (headers)
+    list(REMOVE_DUPLICATES ${target}_src_dirs)
+    foreach(dir ${${target}_src_dirs})
+        # Get unlisted headers
+        file(GLOB srcs "${dir}/*.h")
+
+        # Add install rule for unlisted files
+        if("${target}" STREQUAL "${PROJECT_NAME}")
+            install(FILES ${srcs} DESTINATION ${target})
+        else()
+            install(FILES ${srcs} DESTINATION ${PROJECT_NAME}/${target})
+        endif()
+    endforeach()
+
     # Hack to get ament-generated *_BUILD_DEPENDS variables
-    # Without modifying the variables
     unset(_AMENT_PACKAGE_NAME)
     ament_package_xml()
 
