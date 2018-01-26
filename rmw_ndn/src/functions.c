@@ -108,12 +108,12 @@ rmw_send_response(
   return RMW_RET_OK;
 }
 
-rmw_waitset_t *
+rmw_wait_set_t *
 rmw_create_waitset(size_t max_conditions)
 {
   (void) max_conditions;
   DPUTS("rmw_create_waitset");
-  rmw_waitset_t * ret = (rmw_waitset_t *)malloc(sizeof(rmw_waitset_t));
+  rmw_wait_set_t * ret = (rmw_wait_set_t *)malloc(sizeof(rmw_wait_set_t));
   ret->data = NULL;
   ret->guard_conditions = NULL;
   ret->implementation_identifier = rmw_get_implementation_identifier();
@@ -121,31 +121,11 @@ rmw_create_waitset(size_t max_conditions)
 }
 
 rmw_ret_t
-rmw_destroy_waitset(rmw_waitset_t * waitset)
+rmw_destroy_waitset(rmw_wait_set_t * waitset)
 {
   (void) waitset;
   DPUTS("rmw_destroy_waitset");
   free(waitset);
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_get_topic_names_and_types(
-    const rmw_node_t * node,
-    rmw_topic_names_and_types_t * topic_names_and_types)
-{
-  (void) node;
-  (void) topic_names_and_types;
-  DPUTS("rmw_get_topic_names_and_types");
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_destroy_topic_names_and_types(
-    rmw_topic_names_and_types_t * topic_names_and_types)
-{
-  (void) topic_names_and_types;
-  DPUTS("rmw_destroy_topic_names_and_types");
   return RMW_RET_OK;
 }
 
