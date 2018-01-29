@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSIDL_TYPESUPPORT_test__IDENTIFIER_H_
-#define ROSIDL_TYPESUPPORT_test__IDENTIFIER_H_
+#ifndef ROSIDL_TYPESUPPORT_cbor__IDENTIFIER_H_
+#define ROSIDL_TYPESUPPORT_cbor__IDENTIFIER_H_
 
-#include "rosidl_typesupport_test/visibility_control.h"
+#include "rosidl_typesupport_cbor/visibility_control.h"
 
 #if __cplusplus
 extern "C"
 {
 #endif
 
-ROSIDL_TYPESUPPORT_test_PUBLIC
-extern const char * rosidl_typesupport_test__identifier;
+ROSIDL_TYPESUPPORT_cbor_PUBLIC
+extern const char * rosidl_typesupport_cbor__identifier;
 
 #if __cplusplus
 }
 #endif
 
-#endif  // ROSIDL_TYPESUPPORT_test__IDENTIFIER_H_
+#endif  // ROSIDL_TYPESUPPORT_cbor__IDENTIFIER_H_

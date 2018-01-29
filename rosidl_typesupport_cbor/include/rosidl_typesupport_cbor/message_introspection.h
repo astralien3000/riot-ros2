@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSIDL_TYPESUPPORT_INTROSPECTION_C__MESSAGE_INTROSPECTION_H_
-#define ROSIDL_TYPESUPPORT_INTROSPECTION_C__MESSAGE_INTROSPECTION_H_
+#ifndef ROSIDL_TYPESUPPORT_cbor__MESSAGE_INTROSPECTION_H_
+#define ROSIDL_TYPESUPPORT_cbor__MESSAGE_INTROSPECTION_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -21,9 +21,9 @@
 
 #include "rosidl_generator_c/message_type_support_struct.h"
 
-#include "rosidl_typesupport_test/visibility_control.h"
+#include "rosidl_typesupport_cbor/visibility_control.h"
 
-typedef struct rosidl_typesupport_test__MessageMember
+typedef struct rosidl_typesupport_cbor__MessageMember
 {
   const char * name_;
   uint8_t type_id_;
@@ -38,16 +38,17 @@ typedef struct rosidl_typesupport_test__MessageMember
   const void * (*get_const_function)(const void *, size_t index);
   void * (*get_function)(void *, size_t index);
   bool (* resize_function)(void *, size_t size);
-} rosidl_typesupport_test__MessageMember;
+} rosidl_typesupport_cbor__MessageMember;
 
-typedef struct rosidl_typesupport_test__MessageMembers
+typedef struct rosidl_typesupport_cbor__MessageMembers
 {
   const char * package_name_;
   const char * message_name_;
   uint32_t member_count_;
-  const rosidl_typesupport_test__MessageMember * members_;
+  size_t size_of_;
+  const rosidl_typesupport_cbor__MessageMember * members_;
   size_t (*serialize_)(const void*, char*, size_t);
   size_t (*deserialize_)(void*, const char*, size_t);
-} rosidl_typesupport_test__MessageMembers;
+} rosidl_typesupport_cbor__MessageMembers;
 
-#endif  // ROSIDL_TYPESUPPORT_INTROSPECTION_C__MESSAGE_INTROSPECTION_H_
+#endif  // ROSIDL_TYPESUPPORT_cbor__MESSAGE_INTROSPECTION_H_

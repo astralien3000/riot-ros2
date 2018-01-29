@@ -5,7 +5,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclc REQUIRED)
 find_package(custom_msgs REQUIRED)
 
-find_package(rosidl_typesupport_test REQUIRED)
+find_package(rosidl_typesupport_cbor REQUIRED)
 
 install(
   FILES device.hpp main.cpp motors.cpp motors.hpp service.hpp singleton.hpp
@@ -28,7 +28,7 @@ foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
   file(APPEND "${MAKEFILE_PATH}" "USEMODULE += ${dep}\n")
   file(APPEND "${MAKEFILE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${dep}/Makefile.include\n")
 endforeach()
-file(APPEND "${MAKEFILE_PATH}" "INCLUDES += -I/Users/loicdauphin/myws/install/include/rosidl_typesupport_test/impl/\n")
+file(APPEND "${MAKEFILE_PATH}" "INCLUDES += -I/Users/loicdauphin/myws/install/include/rosidl_typesupport_cbor/impl/\n")
 file(APPEND "${MAKEFILE_PATH}" "USEMODULE += xtimer\n")
 file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.include\n")
 

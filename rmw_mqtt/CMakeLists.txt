@@ -10,12 +10,12 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rmw REQUIRED)
 find_package(rosidl_generator_c REQUIRED)
-find_package(rosidl_typesupport_test REQUIRED)
+find_package(rosidl_typesupport_cbor REQUIRED)
 
 ament_export_dependencies(
   rmw
   rosidl_generator_c
-  rosidl_typesupport_test
+  rosidl_typesupport_cbor
 )
 
 install(

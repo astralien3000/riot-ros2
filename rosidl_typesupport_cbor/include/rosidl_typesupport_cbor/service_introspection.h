@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROSIDL_TYPESUPPORT_INTROSPECTION_C__SERVICE_INTROSPECTION_H_
-#define ROSIDL_TYPESUPPORT_INTROSPECTION_C__SERVICE_INTROSPECTION_H_
+#ifndef ROSIDL_TYPESUPPORT_cbor__SERVICE_INTROSPECTION_H_
+#define ROSIDL_TYPESUPPORT_cbor__SERVICE_INTROSPECTION_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "rosidl_generator_c/service_type_support.h"
+#include "rosidl_generator_c/service_type_support_struct.h"
 #include "rosidl_generator_c/visibility_control.h"
 
-#include "rosidl_typesupport_test/message_introspection.h"
+#include "rosidl_typesupport_cbor/message_introspection.h"
 
-typedef struct ROSIDL_PUBLIC_TYPE rosidl_typesupport_test__ServiceMembers
+typedef struct rosidl_typesupport_cbor__ServiceMembers
 {
   const char * package_name_;
   const char * service_name_;
-  const rosidl_typesupport_test__MessageMembers * request_members_;
-  const rosidl_typesupport_test__MessageMembers * response_members_;
-} rosidl_typesupport_test__ServiceMembers;
+  const rosidl_typesupport_cbor__MessageMembers * request_members_;
+  const rosidl_typesupport_cbor__MessageMembers * response_members_;
+} rosidl_typesupport_cbor__ServiceMembers;
 
-#endif  // ROSIDL_TYPESUPPORT_INTROSPECTION_C__SERVICE_INTROSPECTION_H_
+#endif  // ROSIDL_TYPESUPPORT_cbor__SERVICE_INTROSPECTION_H_

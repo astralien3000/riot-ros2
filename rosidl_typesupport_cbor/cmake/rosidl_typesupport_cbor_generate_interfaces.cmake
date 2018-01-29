@@ -13,7 +13,7 @@
 # limitations under the License.
 
 set(_output_path
-  "${CMAKE_CURRENT_BINARY_DIR}/rosidl_typesupport_test/${PROJECT_NAME}")
+  "${CMAKE_CURRENT_BINARY_DIR}/rosidl_typesupport_cbor/${PROJECT_NAME}")
 set(_generated_msg_header_files "")
 set(_generated_msg_source_files "")
 set(_generated_srv_header_files "")
@@ -28,12 +28,12 @@ foreach(_idl_file ${rosidl_generate_interfaces_IDL_FILES})
   if(_extension STREQUAL ".msg")
     if(_parent_folder STREQUAL "msg")
       list(APPEND _generated_msg_header_files
-        "${_output_path}/${_parent_folder}/${_header_name}__test_type_support.h")
+        "${_output_path}/${_parent_folder}/${_header_name}__rosidl_typesupport_cbor.h")
       list(APPEND _generated_msg_source_files
         "${_output_path}/${_parent_folder}/${_header_name}__type_support.c")
     elseif(_parent_folder STREQUAL "srv")
       list(APPEND _generated_srv_header_files
-        "${_output_path}/${_parent_folder}/${_header_name}__introspection_type_support.h")
+        "${_output_path}/${_parent_folder}/${_header_name}__rosidl_typesupport_cbor.h")
       list(APPEND _generated_srv_source_files
         "${_output_path}/${_parent_folder}/${_header_name}__type_support.c")
     else()
@@ -41,7 +41,7 @@ foreach(_idl_file ${rosidl_generate_interfaces_IDL_FILES})
     endif()
   elseif(_extension STREQUAL ".srv")
     list(APPEND _generated_srv_header_files
-      "${_output_path}/${_parent_folder}/${_header_name}__introspection_type_support.h"
+      "${_output_path}/${_parent_folder}/${_header_name}__rosidl_typesupport_cbor.h"
     )
     list(APPEND _generated_srv_source_files
       "${_output_path}/${_parent_folder}/${_header_name}__type_support.c"
@@ -66,12 +66,12 @@ foreach(_pkg_name ${rosidl_generate_interfaces_DEPENDENCY_PACKAGE_NAMES})
 endforeach()
 
 set(target_dependencies
-  "${rosidl_typesupport_test_BIN}"
-  ${rosidl_typesupport_test_GENERATOR_FILES}
-  "${rosidl_typesupport_test_TEMPLATE_DIR}/msg__test_type_support.h.em"
-  "${rosidl_typesupport_test_TEMPLATE_DIR}/msg__type_support.c.em"
-  "${rosidl_typesupport_test_TEMPLATE_DIR}/srv__introspection_type_support.h.em"
-  "${rosidl_typesupport_test_TEMPLATE_DIR}/srv__type_support.c.em"
+  "${rosidl_typesupport_cbor_BIN}"
+  ${rosidl_typesupport_cbor_GENERATOR_FILES}
+  "${rosidl_typesupport_cbor_TEMPLATE_DIR}/msg__rosidl_typesupport_cbor.h.em"
+  "${rosidl_typesupport_cbor_TEMPLATE_DIR}/msg__type_support.c.em"
+  "${rosidl_typesupport_cbor_TEMPLATE_DIR}/srv__rosidl_typesupport_cbor.h.em"
+  "${rosidl_typesupport_cbor_TEMPLATE_DIR}/srv__type_support.c.em"
   ${rosidl_generate_interfaces_IDL_FILES}
   ${_dependency_files})
 foreach(dep ${target_dependencies})
@@ -80,44 +80,70 @@ foreach(dep ${target_dependencies})
   endif()
 endforeach()
 
-set(generator_arguments_file "${CMAKE_BINARY_DIR}/rosidl_typesupport_test__arguments.json")
+set(generator_arguments_file "${CMAKE_BINARY_DIR}/rosidl_typesupport_cbor__arguments.json")
 rosidl_write_generator_arguments(
   "${generator_arguments_file}"
   PACKAGE_NAME "${PROJECT_NAME}"
   ROS_INTERFACE_FILES "${rosidl_generate_interfaces_IDL_FILES}"
   ROS_INTERFACE_DEPENDENCIES "${_dependencies}"
   OUTPUT_DIR "${_output_path}"
-  TEMPLATE_DIR "${rosidl_typesupport_test_TEMPLATE_DIR}"
+  TEMPLATE_DIR "${rosidl_typesupport_cbor_TEMPLATE_DIR}"
   TARGET_DEPENDENCIES ${target_dependencies}
 )
 
 add_custom_command(
   OUTPUT ${_generated_msg_header_files} ${_generated_msg_source_files}
           ${_generated_srv_header_files} ${_generated_srv_source_files}
-  COMMAND ${PYTHON_EXECUTABLE} ${rosidl_typesupport_test_BIN}
+  COMMAND ${PYTHON_EXECUTABLE} ${rosidl_typesupport_cbor_BIN}
   --generator-arguments-file "${generator_arguments_file}"
   DEPENDS ${target_dependencies}
-  COMMENT "Generating C typesupport_test for ROS interfaces"
+  COMMENT "Generating C introspection for ROS interfaces"
   VERBATIM
 )
 
 # generate header to switch between export and import for a specific package
 set(_visibility_control_file
-  "${_output_path}/msg/rosidl_typesupport_test__visibility_control.h")
+  "${_output_path}/msg/rosidl_typesupport_cbor__visibility_control.h")
 string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
 configure_file(
-  "${rosidl_typesupport_test_TEMPLATE_DIR}/rosidl_typesupport_test__visibility_control.h.in"
+  "${rosidl_typesupport_cbor_TEMPLATE_DIR}/rosidl_typesupport_cbor__visibility_control.h.in"
   "${_visibility_control_file}"
   @ONLY
 )
 list(APPEND _generated_msg_header_files "${_visibility_control_file}")
 
-set(_target_suffix "__rosidl_typesupport_test")
+set(_target_suffix "__rosidl_typesupport_cbor")
 
-add_custom_target(${rosidl_generate_interfaces_TARGET}${_target_suffix} ALL
-  DEPENDS ${_generated_msg_header_files} ${_generated_msg_source_files}
-          ${_generated_srv_header_files} ${_generated_srv_source_files}
+add_library(${rosidl_generate_interfaces_TARGET}${_target_suffix} SHARED
+  ${_generated_msg_header_files} ${_generated_msg_source_files}
+  ${_generated_srv_header_files} ${_generated_srv_source_files})
+if(rosidl_generate_interfaces_LIBRARY_NAME)
+  set_target_properties(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+    PROPERTIES OUTPUT_NAME "${rosidl_generate_interfaces_LIBRARY_NAME}${_target_suffix}")
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set_target_properties(${rosidl_generate_interfaces_TARGET}${_target_suffix} PROPERTIES
+    C_STANDARD 11
+    COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
+endif()
+if(WIN32)
+  target_compile_definitions(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+    PRIVATE "ROSIDL_TYPESUPPORT_cbor_BUILDING_DLL_${PROJECT_NAME}")
+endif()
+target_include_directories(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+  PUBLIC
+  ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_c
+  ${CMAKE_CURRENT_BINARY_DIR}/rosidl_typesupport_cbor
 )
+target_link_libraries(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+  ${rosidl_generate_interfaces_TARGET}__rosidl_generator_c)
+ament_target_dependencies(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+  "rosidl_typesupport_cbor")
+foreach(_pkg_name ${rosidl_generate_interfaces_DEPENDENCY_PACKAGE_NAMES})
+  ament_target_dependencies(
+    ${rosidl_generate_interfaces_TARGET}${_target_suffix}
+    ${_pkg_name})
+endforeach()
 
 add_dependencies(
   ${rosidl_generate_interfaces_TARGET}
@@ -131,19 +157,42 @@ if(NOT rosidl_generate_interfaces_SKIP_INSTALL)
       DESTINATION "include/${PROJECT_NAME}/msg"
     )
   endif()
-  if(NOT _generated_msg_source_files STREQUAL "")
+  if(NOT _generated_srv_header_files STREQUAL "")
     install(
-      FILES ${_generated_msg_source_files}
-      DESTINATION "${rosidl_generate_interfaces_TARGET}${_target_suffix}"
+      FILES ${_generated_srv_header_files}
+      DESTINATION "include/${PROJECT_NAME}/srv"
     )
   endif()
+  install(
+    TARGETS ${rosidl_generate_interfaces_TARGET}${_target_suffix}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+  )
+  ament_export_libraries(${rosidl_generate_interfaces_TARGET}${_target_suffix})
+endif()
 
-  set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${rosidl_generate_interfaces_TARGET}${_target_suffix}/Makefile")
-  file(WRITE  "${MAKEFILE_PATH}" "MODULE = ${rosidl_generate_interfaces_TARGET}${_target_suffix}\n")
-  file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
+if(BUILD_TESTING AND rosidl_generate_interfaces_ADD_LINTER_TESTS)
+  if(NOT _generated_msg_header_files STREQUAL "" OR NOT _generated_srv_header_files STREQUAL "")
+    find_package(ament_cmake_cppcheck REQUIRED)
+    ament_cppcheck(
+      TESTNAME "cppcheck_rosidl_typesupport_cbor"
+      "${_output_path}")
 
-  set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${rosidl_generate_interfaces_TARGET}${_target_suffix}/Makefile.include")
-  file(WRITE  "${MAKEFILE_INCLUDE_PATH}" "")
-  file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += cbor\n")
+    find_package(ament_cmake_cpplint REQUIRED)
+    get_filename_component(_cpplint_root "${_output_path}" DIRECTORY)
+    ament_cpplint(
+      TESTNAME "cpplint_rosidl_typesupport_cbor"
+      # the generated code might contain longer lines for templated types
+      MAX_LINE_LENGTH 999
+      ROOT "${_cpplint_root}"
+      "${_output_path}")
 
+    find_package(ament_cmake_uncrustify REQUIRED)
+    ament_uncrustify(
+      TESTNAME "uncrustify_rosidl_typesupport_cbor"
+      # the generated code might contain longer lines for templated types
+      MAX_LINE_LENGTH 999
+      "${_output_path}")
+  endif()
 endif()

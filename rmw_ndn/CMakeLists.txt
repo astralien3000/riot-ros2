@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rmw REQUIRED)
 find_package(rosidl_generator_c REQUIRED)
-find_package(rosidl_typesupport_test REQUIRED)
+find_package(rosidl_typesupport_cbor REQUIRED)
 
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "")
 add_library(rmw_ndn STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
@@ -18,7 +18,7 @@ add_library(rmw_ndn STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
 ament_export_dependencies(
   rmw
   rosidl_generator_c
-  rosidl_typesupport_test
+  rosidl_typesupport_cbor
 )
 
 configure_rmw_library(rmw_ndn)

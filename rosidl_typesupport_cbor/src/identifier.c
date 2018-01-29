@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rosidl_typesupport_test/identifier.h"
+#include "rosidl_typesupport_cbor/identifier.h"
 
-const char * rosidl_typesupport_test__identifier = "test";
+const char * rosidl_typesupport_cbor__identifier = "rosidl_typesupport_cbor";

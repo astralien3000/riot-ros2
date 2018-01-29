@@ -1,7 +1,7 @@
 #include "rmw/rmw.h"
 
 #include "std_msgs/msg/string.h"
-#include "rosidl_typesupport_test/message_introspection.h"
+#include "rosidl_typesupport_cbor/message_introspection.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +25,7 @@ rmw_create_publisher(
   (void) topic_name;
   (void) qos_policies;
   DEBUG("rmw_create_publisher" "\n");
-  rosidl_typesupport_test__MessageMembers* tsdata = (rosidl_typesupport_test__MessageMembers*)type_support->data;
+  rosidl_typesupport_cbor__MessageMembers* tsdata = (rosidl_typesupport_cbor__MessageMembers*)type_support->data;
 
   rmw_publisher_t * ret = (rmw_publisher_t *)malloc(sizeof(rmw_publisher_t));
   ret->implementation_identifier = rmw_get_implementation_identifier();

@@ -1,7 +1,7 @@
 #include "rmw/rmw.h"
 
 #include "std_msgs/msg/string.h"
-#include "rosidl_typesupport_test/message_introspection.h"
+#include "rosidl_typesupport_cbor/message_introspection.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +26,7 @@ rmw_create_subscription(
   (void) qos_policies;
   (void) ignore_local_publications;
   DEBUG("rmw_create_subscription" "\n");
-  rosidl_typesupport_test__MessageMembers* tsdata = (rosidl_typesupport_test__MessageMembers*)type_support->data;
+  rosidl_typesupport_cbor__MessageMembers* tsdata = (rosidl_typesupport_cbor__MessageMembers*)type_support->data;
 
   rmw_subscription_t * ret = (rmw_subscription_t *)malloc(sizeof(rmw_subscription_t));
   ret->implementation_identifier = rmw_get_implementation_identifier();

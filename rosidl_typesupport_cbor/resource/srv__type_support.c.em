@@ -1,4 +1,4 @@
-// generated from rosidl_typesupport_test/resource/srv__type_support.c.em
+// generated from rosidl_typesupport_cbor/resource/srv__type_support.c.em
 // generated code does not contain a copyright notice
 
 @#######################################################################
@@ -16,23 +16,23 @@ header_guard_parts = [
     get_header_filename_from_msg_name(spec.srv_name) + '__type_support_h']
 header_guard_variable = '__'.join([x.upper() for x in header_guard_parts]) + '_'
 
-function_prefix = '%s__srv__rosidl_typesupport_test' % spec.pkg_name
+function_prefix = '%s__srv__rosidl_typesupport_cbor' % spec.pkg_name
 }@
 #ifndef @(header_guard_variable)
 #define @(header_guard_variable)
 
-#include <rosidl_generator_c/service_type_support.h>
-#include "@(spec.pkg_name)/msg/rosidl_typesupport_test__visibility_control.h"
+#include <rosidl_generator_c/service_type_support_struct.h>
+#include "@(spec.pkg_name)/msg/rosidl_typesupport_cbor__visibility_control.h"
 
-#include "@(spec.pkg_name)/srv/@(get_header_filename_from_msg_name(spec.srv_name))__introspection_type_support.h"
-#include "@(spec.pkg_name)/srv/@(get_header_filename_from_msg_name(spec.request.base_type.type))__introspection_type_support.h"
-#include "@(spec.pkg_name)/srv/@(get_header_filename_from_msg_name(spec.response.base_type.type))__introspection_type_support.h"
+#include "@(spec.pkg_name)/srv/@(get_header_filename_from_msg_name(spec.srv_name))__rosidl_typesupport_cbor.h"
+#include "@(spec.pkg_name)/srv/@(get_header_filename_from_msg_name(spec.request.base_type.type))__rosidl_typesupport_cbor.h"
+#include "@(spec.pkg_name)/srv/@(get_header_filename_from_msg_name(spec.response.base_type.type))__rosidl_typesupport_cbor.h"
 
-#include "rosidl_typesupport_test/identifier.h"
-#include "rosidl_typesupport_test/service_introspection.h"
+#include "rosidl_typesupport_cbor/identifier.h"
+#include "rosidl_typesupport_cbor/service_introspection.h"
 
 // this is intentionally not const to allow initialization later to prevent an initialization race
-static rosidl_typesupport_test__ServiceMembers @(function_prefix)__@(spec.srv_name)_service_members = {
+static rosidl_typesupport_cbor__ServiceMembers @(function_prefix)__@(spec.srv_name)_service_members = {
   "@(spec.pkg_name)",  // package name
   "@(spec.srv_name)",  // service name
   // these two fields are initialized below on the first access
@@ -49,31 +49,31 @@ static rosidl_service_type_support_t @(function_prefix)__@(spec.srv_name)_servic
 };
 
 // Forward declaration of request/response type support functions
-const rosidl_service_type_support_t *
-ROSIDL_GET_TYPE_SUPPORT_FUNCTION(@(spec.pkg_name), srv, @(spec.srv_name)_Request)();
+const rosidl_message_type_support_t *
+ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_cbor, @(spec.pkg_name), srv, @(spec.srv_name)_Request)();
 
-const rosidl_service_type_support_t *
-ROSIDL_GET_TYPE_SUPPORT_FUNCTION(@(spec.pkg_name), srv, @(spec.srv_name)_Response)();
+const rosidl_message_type_support_t *
+ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_cbor, @(spec.pkg_name), srv, @(spec.srv_name)_Response)();
 
-ROSIDL_TYPESUPPORT_INTROSPECTION_C_EXPORT_@(spec.pkg_name)
+ROSIDL_TYPESUPPORT_cbor_EXPORT_@(spec.pkg_name)
 const rosidl_service_type_support_t *
-ROSIDL_GET_TYPE_SUPPORT_FUNCTION(@(spec.pkg_name), srv, @(spec.srv_name))() {
+ROSIDL_TYPESUPPORT_INTERFACE__SERVICE_SYMBOL_NAME(rosidl_typesupport_cbor, @(spec.pkg_name), @(spec.srv_name))() {
   if (!@(function_prefix)__@(spec.srv_name)_service_type_support_handle.typesupport_identifier) {
     @(function_prefix)__@(spec.srv_name)_service_type_support_handle.typesupport_identifier =
-      rosidl_typesupport_test__identifier;
+      rosidl_typesupport_cbor__identifier;
   }
-  rosidl_typesupport_test__ServiceMembers * service_members =
-    (rosidl_typesupport_test__ServiceMembers *)@(function_prefix)__@(spec.srv_name)_service_type_support_handle.data;
+  rosidl_typesupport_cbor__ServiceMembers * service_members =
+    (rosidl_typesupport_cbor__ServiceMembers *)@(function_prefix)__@(spec.srv_name)_service_type_support_handle.data;
 
   if (!service_members->request_members_) {
     service_members->request_members_ =
-      (const rosidl_typesupport_test__MessageMembers *)
-      ROSIDL_GET_TYPE_SUPPORT_FUNCTION(@(spec.pkg_name), srv, @(spec.srv_name)_Request)()->data;
+      (const rosidl_typesupport_cbor__MessageMembers *)
+      ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_cbor, @(spec.pkg_name), srv, @(spec.srv_name)_Request)()->data;
   }
   if (!service_members->response_members_) {
     service_members->response_members_ =
-      (const rosidl_typesupport_test__MessageMembers *)
-      ROSIDL_GET_TYPE_SUPPORT_FUNCTION(@(spec.pkg_name), srv, @(spec.srv_name)_Response)()->data;
+      (const rosidl_typesupport_cbor__MessageMembers *)
+      ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_cbor, @(spec.pkg_name), srv, @(spec.srv_name)_Response)()->data;
   }
 
   return &@(function_prefix)__@(spec.srv_name)_service_type_support_handle;

@@ -1,4 +1,4 @@
-// generated from rosidl_typesupport_test/resource/msg__type_support.c.em
+// generated from rosidl_typesupport_cbor/resource/msg__type_support.c.em
 // generated code does not contain a copyright notice
 
 @#######################################################################
@@ -14,20 +14,20 @@
 @#######################################################################
 @
 @{
-function_prefix = '%s__%s__rosidl_typesupport_test' % (spec.base_type.pkg_name, subfolder)
+function_prefix = '%s__%s__rosidl_typesupport_cbor' % (spec.base_type.pkg_name, subfolder)
 }@
 
 // providing offsetof()
 #include <stddef.h>
-#include <stdio.h>
+
 #include <cbor.h>
 
-#include <@(spec.base_type.pkg_name)/@(subfolder)/@(get_header_filename_from_msg_name(spec.base_type.type))__test_type_support.h>
-#include "@(spec.base_type.pkg_name)/msg/rosidl_generator_c__visibility_control.h"
+#include <@(spec.base_type.pkg_name)/@(subfolder)/@(get_header_filename_from_msg_name(spec.base_type.type))__rosidl_typesupport_cbor.h>
+#include "@(spec.base_type.pkg_name)/msg/rosidl_typesupport_cbor__visibility_control.h"
 
-#include "rosidl_typesupport_test/field_types.h"
-#include "rosidl_typesupport_test/identifier.h"
-#include "rosidl_typesupport_test/message_introspection.h"
+#include "rosidl_typesupport_cbor/field_types.h"
+#include "rosidl_typesupport_cbor/identifier.h"
+#include "rosidl_typesupport_cbor/message_introspection.h"
 
 #include "@(spec.base_type.pkg_name)/@(subfolder)/@(get_header_filename_from_msg_name(spec.base_type.type))__struct.h"
 
@@ -51,7 +51,7 @@ for field in spec.fields:
             [])
         field_names.append(field.name)
         field_names = includes.setdefault(
-            '%s/msg/%s__test_type_support.h' %
+            '%s/msg/%s__rosidl_typesupport_cbor.h' %
             (field.type.pkg_name, get_header_filename_from_msg_name(field.type.type)),
             [])
         field_names.append(field.name)
@@ -73,7 +73,7 @@ extern "C"
 
 @
 @#######################################################################
-@# fields helpers
+@# include message dependencies
 @#######################################################################
 @[if spec.fields]@
 @[  for field in spec.fields]@
@@ -132,12 +132,7 @@ bool @(function_prefix)__resize_function__@(spec.base_type.type)__@(field.name)(
 @[      end if]@
 @[    end if]@
 @[  end for]@
-
-@
-@#######################################################################
-@# Message member array
-@#######################################################################
-static rosidl_typesupport_test__MessageMember @(function_prefix)__@(spec.base_type.type)_message_member_array[@(len(spec.fields))] = {
+static rosidl_typesupport_cbor__MessageMember @(function_prefix)__@(spec.base_type.type)_message_member_array[@(len(spec.fields))] = {
 @{
 for index, field in enumerate(spec.fields):
     print('  {')
@@ -146,14 +141,14 @@ for index, field in enumerate(spec.fields):
     print('    "%s",  // name' % field.name)
     if field.type.is_primitive_type():
         # uint8_t type_id_
-        print('    rosidl_typesupport_test__ROS_TYPE_%s,  // type' % field.type.type.upper())
+        print('    rosidl_typesupport_cbor__ROS_TYPE_%s,  // type' % field.type.type.upper())
         # size_t string_upper_bound
         print('    %u,  // upper bound of string' % (field.type.string_upper_bound if field.type.string_upper_bound is not None else 0))
         # const rosidl_generator_c::MessageTypeSupportHandle * members_
         print('    NULL,  // members of sub message')
     else:
         # uint8_t type_id_
-        print('    rosidl_typesupport_test__ROS_TYPE_MESSAGE,  // type')
+        print('    rosidl_typesupport_cbor__ROS_TYPE_MESSAGE,  // type')
         # size_t string_upper_bound
         print('    0,  // upper bound of string')
         # const rosidl_message_type_support_t * members_
@@ -186,6 +181,7 @@ for index, field in enumerate(spec.fields):
         print('  }')
 }@
 };
+
 
 @
 @#######################################################################
@@ -252,27 +248,22 @@ print("    return ret;");
 }
 @[end if]@
 
-@
-@#######################################################################
-@# Message members struct
-@#######################################################################
-static const rosidl_typesupport_test__MessageMembers @(function_prefix)__@(spec.base_type.type)_message_members = {
+static const rosidl_typesupport_cbor__MessageMembers @(function_prefix)__@(spec.base_type.type)_message_members = {
   "@(spec.base_type.pkg_name)",  // package name
   "@(spec.base_type.type)",  // message name
   @(len(spec.fields)),  // number of fields
+  sizeof(@(spec.base_type.pkg_name)__@(subfolder)__@(spec.base_type.type)),
 @[if spec.fields]@
-  @(function_prefix)__@(spec.base_type.type)_message_member_array,
+  @(function_prefix)__@(spec.base_type.type)_message_member_array,  // message members
   @(function_prefix)__@(spec.base_type.type)_serialize,
   @(function_prefix)__@(spec.base_type.type)_deserialize
 @[else]@
-  0, 0, 0
+  0,  // message members
+  0,
+  0
 @[end if]@
 };
 
-@
-@#######################################################################
-@# Message type support handle
-@#######################################################################
 // this is not const since it must be initialized on first access
 // since C does not allow non-integral compile-time constants
 static rosidl_message_type_support_t @(function_prefix)__@(spec.base_type.type)_message_type_support_handle = {
@@ -281,21 +272,18 @@ static rosidl_message_type_support_t @(function_prefix)__@(spec.base_type.type)_
   get_message_typesupport_handle_function,
 };
 
-@
-@#######################################################################
-@# ROSIDL get type support function
-@#######################################################################
-ROSIDL_GENERATOR_C_EXPORT_@(spec.base_type.pkg_name)
+ROSIDL_TYPESUPPORT_cbor_EXPORT_@(spec.base_type.pkg_name)
 const rosidl_message_type_support_t *
-ROSIDL_GET_TYPE_SUPPORT_FUNCTION(@(spec.base_type.pkg_name), @(subfolder), @(spec.msg_name))() {
+ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_cbor, @(spec.base_type.pkg_name), @(subfolder), @(spec.msg_name))() {
 @[for i, field in enumerate(spec.fields)]@
 @[    if not field.type.is_primitive_type()]@
-  @(function_prefix)__@(spec.base_type.type)_message_member_array[@(i)].members_ = ROSIDL_GET_TYPE_SUPPORT(@(field.type.pkg_name), msg, @(field.type.type));
+  @(function_prefix)__@(spec.base_type.type)_message_member_array[@(i)].members_ =
+    ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_cbor, @(field.type.pkg_name), msg, @(field.type.type))();
 @[    end if]@
 @[end for]@
   if (!@(function_prefix)__@(spec.base_type.type)_message_type_support_handle.typesupport_identifier) {
     @(function_prefix)__@(spec.base_type.type)_message_type_support_handle.typesupport_identifier =
-      rosidl_typesupport_test__identifier;
+      rosidl_typesupport_cbor__identifier;
   }
   return &@(function_prefix)__@(spec.base_type.type)_message_type_support_handle;
 }
