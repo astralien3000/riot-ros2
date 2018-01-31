@@ -23,15 +23,20 @@ rmw_init(void)
 }
 
 rmw_node_t *
-rmw_create_node(const char * name, size_t domain_id)
+rmw_create_node(
+        const char * name,
+        const char * namespace_,
+        size_t domain_id,
+        const rmw_node_security_options_t * security_options)
 {
-  (void) name;
   (void) domain_id;
+  (void) security_options;
   DEBUG("rmw_create_node" "\n");
   rmw_node_t *node = (rmw_node_t *)malloc(sizeof(rmw_node_t));
   node->implementation_identifier = rmw_get_implementation_identifier();
   node->data = NULL;
   node->name = name;
+  node->namespace_ = namespace_;
 
   rmw::ndn::Application::create();
 

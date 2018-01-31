@@ -109,7 +109,7 @@ rmw_send_response(
 }
 
 rmw_wait_set_t *
-rmw_create_waitset(size_t max_conditions)
+rmw_create_wait_set(size_t max_conditions)
 {
   (void) max_conditions;
   DPUTS("rmw_create_waitset");
@@ -121,7 +121,7 @@ rmw_create_waitset(size_t max_conditions)
 }
 
 rmw_ret_t
-rmw_destroy_waitset(rmw_wait_set_t * waitset)
+rmw_destroy_wait_set(rmw_wait_set_t * waitset)
 {
   (void) waitset;
   DPUTS("rmw_destroy_waitset");

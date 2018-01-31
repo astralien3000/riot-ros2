@@ -32,8 +32,12 @@ rmw_wait(
   const uint32_t begin = xtimer_now_usec();
   
   uint32_t timeout = 0;
+  bool disable_timeout = false;
   if(wait_timeout) {
     timeout = wait_timeout->nsec/1000 + wait_timeout->sec*1000000;
+  }
+  else {
+    disable_timeout = true;
   }
   
   const uint32_t end = begin + timeout;
@@ -62,7 +66,7 @@ rmw_wait(
       return RMW_RET_OK;
     }
 
-  } while(xtimer_now_usec() < end);
+  } while((xtimer_now_usec() < end) || disable_timeout);
 
   return RMW_RET_TIMEOUT;
 }

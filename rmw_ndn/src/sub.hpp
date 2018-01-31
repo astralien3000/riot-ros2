@@ -29,7 +29,7 @@ private:
   static const unsigned int MIN_WINDOW = 1;
 
 private:
-  const char* _topic_name;
+  char* _topic_name;
   State _state;
   unsigned int _seq;
   Timer::us _timeout;

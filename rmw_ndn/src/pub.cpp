@@ -5,14 +5,18 @@
 #define ENABLE_DEBUG 0
 #include <debug.h>
 
+#include <string.h>
+
 using namespace rmw::ndn;
 using App = Application;
 
 Publisher::Publisher(const char* topic_name, size_t (*serialize)(const void*, char*, size_t))
-  : _topic_name(topic_name)
-  , _cur_seq(0)
+  : _cur_seq(0)
   , _req_seq(0)
   , _serialize(serialize) {
+
+  _topic_name = (char*)malloc(strlen(topic_name));
+  strcpy(_topic_name, topic_name);
   App::add_publisher(this);
 }
 
@@ -27,11 +31,12 @@ void Publisher::on_interest(unsigned int seq) {
 }
 
 void Publisher::push_data(const void* msg) {
-  char data[64] = {};
+  char* data = (char*)malloc(64);
   size_t size = 0;
   
   size = _serialize(msg, data, 64);
-  DEBUG("push_data(%s)\n", data);
+  data = (char*)realloc(data, size);
+  DEBUG("push_data(%s) on %s\n", data, _topic_name);
 
   if(_data.size() >= MAX_QUEUE) {
     _data.erase(_data.begin());

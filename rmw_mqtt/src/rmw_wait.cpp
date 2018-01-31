@@ -7,7 +7,7 @@
 #include "app.hpp"
 #include "sub.hpp"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include <debug.h>
 
 using Sub = rmw::mqtt::Subscription;

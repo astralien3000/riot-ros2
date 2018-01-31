@@ -7,7 +7,7 @@
 
 #include "net/emcute.h"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include <debug.h>
 
 #define SC_NETIF_IPV6_DEFAULT_PREFIX_LEN (64)

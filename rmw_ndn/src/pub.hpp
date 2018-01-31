@@ -6,6 +6,9 @@
 #include <vector>
 #include <utility>
 
+#define ENABLE_DEBUG 0
+#include <debug.h>
+
 namespace rmw {
 namespace ndn {
 
@@ -17,7 +20,7 @@ private:
   static const unsigned int MAX_QUEUE = 1;
 
 private:
-  const char* _topic_name;
+  char* _topic_name;
   unsigned int _cur_seq;
   unsigned int _req_seq;
   FIFO _data;
@@ -38,9 +41,11 @@ public:
     if(!_data.empty()) {
       *data = std::get<0>(_data.back());
       *size = std::get<1>(_data.back());
+      DEBUG("SYNC DATA : [%s]\n", *data);
     }
     else {
       *data = NULL;
+      DEBUG("NO SYNC DATA\n", *data);
     }
   }
 

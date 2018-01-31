@@ -53,7 +53,7 @@ void Application::add_publisher(Publisher* pub) {
   instance()._pubs.push_back(pub);
 
   char prefix[64] = { 0 };
-  snprintf(prefix, 32, "/%s", pub->get_topic_name());
+  snprintf(prefix, 32, "%s", pub->get_topic_name());
   ndn_shared_block_t* sp = ndn_name_from_uri(prefix, strlen(prefix));
   if (sp == NULL) {
     return;
@@ -99,7 +99,7 @@ void Application::update(void) {
 
 void Application::send_sync_interest(const char* topic, unsigned int timeout) {
   char uri[32] = {0};
-  snprintf(uri, sizeof(uri), "/%s/sync/%lu", topic, random_uint32());
+  snprintf(uri, sizeof(uri), "%s/sync/%lu", topic, random_uint32());
   DEBUG("Send interest %s\n", uri);
 
   ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
@@ -116,7 +116,7 @@ void Application::send_sync_interest(const char* topic, unsigned int timeout) {
 
 void Application::send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout) {
   char uri[32] = {0};
-  snprintf(uri, sizeof(uri), "/%s/%u", topic, seq);
+  snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
   DEBUG("Send interest %s\n", uri);
 
   ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
@@ -149,8 +149,8 @@ std::vector<Publisher*>::iterator Application::end_publisher(void) {
 
 void Application::publish(const char* topic, unsigned int seq, const char* data, size_t size) {
   char uri[32] = {0};
-  snprintf(uri, sizeof(uri), "/%s/%u", topic, seq);
-  DEBUG("Send interest %s\n", uri);
+  snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
+  DEBUG("Publish %s\n", uri);
 
   ndn_shared_block_t* sdn = ndn_name_from_uri(uri, strlen(uri));
   if (sdn == NULL) {
@@ -205,7 +205,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
   size_t tmp_size = (size_t)*(const char*)(content.buf+1);
   for(auto it = Application::begin_subscriptions() ; it != Application::end_subscriptions() ; it++) {
     char uri[32] = {0};
-    snprintf(uri, sizeof(uri), "/%s", (*it)->get_topic_name());
+    snprintf(uri, sizeof(uri), "%s", (*it)->get_topic_name());
 
     ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
     if (sin == NULL) {
@@ -279,7 +279,7 @@ int _on_interest(ndn_block_t* interest)
 
   for(auto it = Application::begin_publisher() ; it != Application::end_publisher() ; it++) {
     char uri[32] = {0};
-    snprintf(uri, sizeof(uri), "/%s", (*it)->get_topic_name());
+    snprintf(uri, sizeof(uri), "%s", (*it)->get_topic_name());
 
     ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
     if (sin == NULL) {

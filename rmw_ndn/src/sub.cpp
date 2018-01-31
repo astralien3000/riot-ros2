@@ -4,18 +4,20 @@
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
+#include <string.h>
 
 using namespace rmw::ndn;
 using App = Application;
 
 Subscription::Subscription(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t))
-  : _topic_name(topic_name)
-  , _state(UNSYNCHRONIZED_NOSENT)
+  : _state(UNSYNCHRONIZED_NOSENT)
   , _seq(0)
   , _timeout(MAX_TIMEOUT)
   , _window(MIN_WINDOW)
   , _deserialize(deserialize) {
 
+  _topic_name = (char*)malloc(strlen(topic_name));
+  strcpy(_topic_name, topic_name);
   App::add_subscription(this);
   _last_interest_date = Timer::now() - _timeout;
   update();
@@ -71,5 +73,6 @@ bool Subscription::take(void* msg) {
 
   auto ret = _data.front();
   _data.erase(_data.begin());
+  DEBUG("%i :: %i :: [%s] \n", std::get<1>(ret), _deserialize(msg, std::get<0>(ret), std::get<1>(ret)), std::get<0>(ret));
   return std::get<1>(ret) == _deserialize(msg, std::get<0>(ret), std::get<1>(ret));
 }
