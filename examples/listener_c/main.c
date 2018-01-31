@@ -16,9 +16,9 @@ int main(void)
   static char **argv = NULL;
 
   rclc_init(argc, argv);
-  rclc_node_t* node = rclc_create_node("listener");
+  rclc_node_t* node = rclc_create_node("listener", "");
   rclc_subscription_t* sub =
-      rclc_create_subscription(node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, String), "chatter", chatter_callback, 1, false);
+      rclc_create_subscription(node, RCLC_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String), "chatter", chatter_callback, 1, false);
   
   rclc_spin_node(node);
   

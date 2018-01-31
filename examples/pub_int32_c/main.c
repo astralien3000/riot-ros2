@@ -10,8 +10,8 @@ int main(void)
   static char **argv = NULL;
 
   rclc_init(argc, argv);
-  rclc_node_t* node = rclc_create_node("pub_int");
-  rclc_publisher_t* pub = rclc_create_publisher(node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, Int32), "int32", 1);
+  rclc_node_t* node = rclc_create_node("pub_int", "");
+  rclc_publisher_t* pub = rclc_create_publisher(node, RCLC_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), "int32", 1);
 
   std_msgs__msg__Int32 msg;
   msg.data = -100;
@@ -22,7 +22,7 @@ int main(void)
     
     rclc_publish(pub, (const void*)&msg);
 
-    rclc_sleep_ms(100);
+    rclc_spin_node_once(node, 100);
   }
     
   rclc_destroy_publisher(pub);
