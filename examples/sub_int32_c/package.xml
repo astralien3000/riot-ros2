@@ -11,7 +11,6 @@
 
   <build_depend>rclc</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>rmw_impl</build_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
