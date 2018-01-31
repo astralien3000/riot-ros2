@@ -1,9 +1,0 @@
-bin
-
-*.files
-*.includes
-*.creator
-*.config
-*.user
-
-*~
