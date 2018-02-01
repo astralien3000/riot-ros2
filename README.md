@@ -70,6 +70,7 @@ Please, follow the requirements for [ros2 official installation instructions](ht
 mkdir -p ~/ros2_riot_ws/src
 cd ~/ros2_riot_ws
 wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
+wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/ament2riot.cmake
 vcs import src < riot-ros2.repos
 ```
 
