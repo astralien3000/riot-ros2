@@ -1,4 +1,7 @@
 sudo: required
+language: python
+python:
+ - "3.5"
 addons:
   apt:
     sources:
@@ -10,8 +13,8 @@ addons:
     - g++-5
     - linux-libc-dev:i386
 before_install:
- - pip3 install vcstool
- - pip3 install empy
+ - pip install vcstool
+ - pip install empy pyparsing
  - sudo apt-get remove g++ gcc
  - sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
  - sudo ln -s /usr/bin/g++-5 /usr/bin/g++
@@ -22,19 +25,29 @@ before_install:
  - make
  - sudo make install
 install:
+# Get sources
  - mkdir -p ~/ros2_riot_ws/src
  - cd ~/ros2_riot_ws
  - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
+ - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/ament2riot.cmake
  - vcs import src < riot-ros2.repos
- - (cd src/ros2/riot/ && git submodule update --init)
+ - touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNORE
+# Get tools
+ - mkdir -p ~/ros2_riot_ws/tools/src
+ - cd ~/ros2_riot_ws/tools
+ - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2-tools.repos
+ - vcs import src < riot-ros2-tools.repos
 script:
+# Build tools
+ - cd ~/ros2_riot_ws/tools
  - ./src/ament/ament_tools/scripts/ament.py build --symlink-install
+ - . ~/ros2_riot_ws/tools/install/setup.bash
+# Build phase 1
+ - cd ~/ros2_riot_ws
+ - ament build --symlink-install --force-cmake-configure --cmake-args -DCMAKE_TOOLCHAIN_FILE=`pwd`/ament2riot.cmake
+# Build phase 2
  - ./install/RIOT/dist/tools/tapsetup/tapsetup
- - (cd install/talker_c && make RMW=rmw_ndn)
- - (cd install/listener_c && make RMW=rmw_ndn)
- - (cd install/pub_int32_c && make RMW=rmw_ndn)
- - (cd install/sub_int32_c && make RMW=rmw_ndn)
- - (cd install/talker_c && make RMW=rmw_mqtt)
- - (cd install/listener_c && make RMW=rmw_mqtt)
- - (cd install/pub_int32_c && make RMW=rmw_mqtt)
- - (cd install/sub_int32_c && make RMW=rmw_mqtt)
+ - (cd install/talker_c && make QUIET=1)
+ - (cd install/listener_c && make QUIET=1)
+ - (cd install/pub_int32_c && make QUIET=1)
+ - (cd install/sub_int32_c && make QUIET=1)
