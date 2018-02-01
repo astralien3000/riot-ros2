@@ -2,17 +2,28 @@
 
 This project enables ROS2 to run on microcontrollers using the RIOT Operating System.
 
-# Architecture
+# Package support
 
 ROS2 is composed of several layers. Some have been modified to be able to run on microcontroller.
 Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS2 stack :
 
-| Layers | ROS2 | RIOT-ROS2 |
-|-|-|-|
-| RCLC (ROS Client Library for C) | API only | implemented, following the API |
-| RCL (ROS Client Library) | implemented | `timer.c` modified |
-| RMW (ROS MiddleWare) | Based on DDS | 2 implementations : `ndn-riot` and `emcute` |
-| rosidl | DDS, introspection | custom, serialisation based on `cbor` |
+| Layer | Package | ROS2 | RIOT-ROS2 |
+|-|-|-|-|
+| ROS Client Library bindings | rclc   | no [(open PR)](https://github.com/ros2/rclc/pull/8) | yes |
+|                             | rclcpp | yes | no |
+|                             | rclpy  | yes | no |
+| ROS Client Library | rcl | yes | yes |
+| ROS MiddleWare | rmw_fastrtps | yes | no |
+|                | rmw_ndn      | no | yes |
+| ROS IDL Generators | rosidl_generator_c   | yes | yes |
+|                    | rosidl_generator_cpp | yes | no  |
+|                    | rosidl_generator_py  | yes | no  |
+| ROS IDL Type Support | rosidl_typesupport_introspection_c   | yes | no  |
+|                      | rosidl_typesupport_introspection_cpp | yes | no  |
+|                      | rosidl_typesupport_cbor              | no  | yes |
+| ROS IDL Interfaces | common_interfaces | yes | yes |
+|                    | rcl_interfaces    | yes | yes, excepted test_msgs |
+
 
 # Examples
 
