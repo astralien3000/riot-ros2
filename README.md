@@ -55,15 +55,20 @@ Please, follow the requirements for [ros2 official installation instructions](ht
 
 ## Get the sources
 
-```
+```sh
 mkdir -p ~/ros2_riot_ws/src
 cd ~/ros2_riot_ws
 wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
 vcs import src < riot-ros2.repos
-(cd src/ros2/riot/ && git submodule update --init)
 ```
 
-## Build the tools
+Some downloaded package are not supported, you may run these commands to disable them : 
+
+```sh
+touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNORE
+```
+
+## Get the tools
 
 `riot-ros2` is meant for cross-compilation.
 But some ROS2 tools need to be compiled for your current architecture.
@@ -85,18 +90,18 @@ Once built, you can run this command to use `ament` and other ROS2 tools.
 
 ## Two build phase
 
-ROS2 and RIOT have 2 very different build systems. To be able to use them together, you need to build applications in 2 steps : using Ament, as a ROS2 user would normally do, and then compiling each application for it's target microcontroller with RIOT's Makefiles.
+ROS2 and RIOT have 2 very different build systems. To be able to use them together, you need to build applications in 2 steps : using Ament, as a ROS2 user would normally do (but in the case of cross compilation), and then compiling each application for it's target microcontroller with RIOT's Makefiles.
 
 First phase :
 
 ```sh
 cd ~/ros2_riot_ws
-ament build --symlink-install
+ament build --symlink-install --force-cmake-configure --cmake-args -DCMAKE_TOOLCHAIN_FILE=`pwd`/ament2riot.cmake
 ```
 
 After that, you can go to the second build phase.
 
-### Linux example : NDN
+### Linux native 2nd build phase example
 
 First, setup the tap interface :
 ```sh
@@ -113,38 +118,11 @@ On a second terminal :
 (cd install/listener_c && make PORT=tap1 all term)
 ```
 
-### Linux example : MQTT
-
-[Usage of MQTT in RIOT](https://github.com/RIOT-OS/RIOT/tree/3d48eee0955e9452662af3b732516f8437f53092/examples/emcute)
-
-Setup the tap interface :
-```sh
-./install/RIOT/dist/tools/tapsetup/tapsetup
-sudo ip a a fec0:affe::1/64 dev tapbr0
-```
-
-Download, compile and run the broker :
-```sh
-git clone https://github.com/eclipse/mosquitto.rsmb.git
-(cd mosquitto.rsmb/rsmb/src/ && make)
-./mosquitto.rsmb/rsmb/src/broker_mqtts ~/ros2_riot_ws/src/ros2/riot/broker.conf
-```
-
-On a second terminal :
-```sh
-(cd install/talker_c && make RMW=rmw_mqtt PORT=tap0 MYADDR=fec0:affe::2 all term)
-```
-
-On a third terminal :
-```sh
-(cd install/listener_c && make RMW=rmw_mqtt PORT=tap1 MYADDR=fec0:affe::3 all term)
-```
-
 # Troubleshooting
 
 If this command fails :
 ```sh
-> ./RIOT/dist/tools/tapsetup/tapsetup
+> ./install/RIOT/dist/tools/tapsetup/tapsetup
 creating tapbr0
 RTNETLINK answers: File exists
 ```
@@ -153,5 +131,5 @@ It is not supposed to be called twice.
 
 Try :
 ```sh
-./RIOT/dist/tools/tapsetup/tapsetup -d
+./install/RIOT/dist/tools/tapsetup/tapsetup -d
 ```
