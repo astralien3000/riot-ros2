@@ -1,32 +1,50 @@
 #include "pub.hpp"
 
-#include "app.hpp"
+#include "app.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
 
-#include <string.h>
-
 using namespace rmw::ndn;
-using App = Application;
 
-Publisher::Publisher(const char* topic_name, size_t (*serialize)(const void*, char*, size_t))
-  : _cur_seq(0)
-  , _req_seq(0)
-  , _serialize(serialize) {
+Publisher::Publisher(const char* topic_name, size_t (*serialize)(const void*, char*, size_t)) {
+  _cur_seq = 0;
+  _req_seq = 0;
+  _serialize = serialize;
+  _data.next = NULL;
 
   _topic_name = (char*)malloc(strlen(topic_name));
   strcpy(_topic_name, topic_name);
-  App::add_publisher(this);
+  app_add_pub((pub_t*)this);
 }
 
-void Publisher::on_interest(unsigned int seq) {
-  if(_req_seq < seq) {
-    _req_seq = seq;
+void pub_get_sync_data(pub_t* pub, unsigned int* seq, const char** data, size_t* size) {
+  *seq = pub->_cur_seq;
+  if(pub->_data.next) {
+    clist_node_t* _ret = clist_rpeek(&pub->_data);
+    sub_data_t* ret = container_of(_ret, sub_data_t, node);
+    *data = ret->data;
+    *size = ret->size;
+    DEBUG("SYNC DATA : [%s]\n", *data);
+  }
+  else {
+    *data = NULL;
+    DEBUG("NO SYNC DATA\n", *data);
+  }
+}
+
+void pub_on_interest(pub_t* pub, unsigned int seq) {
+  if(pub->_req_seq < seq) {
+    pub->_req_seq = seq;
   }
 
-  if(_cur_seq <= _req_seq) {
-    App::publish(_topic_name, _cur_seq, std::get<0>(_data.back()), std::get<1>(_data.back()));
+  if(pub->_cur_seq <= pub->_req_seq) {
+    clist_node_t* _ret = clist_rpeek(&pub->_data);
+    sub_data_t* ret = container_of(_ret, sub_data_t, node);
+    app_publish(pub->_topic_name, pub->_cur_seq, ret->data, ret->size);
   }
 }
 
@@ -38,14 +56,22 @@ void Publisher::push_data(const void* msg) {
   data = (char*)realloc(data, size);
   DEBUG("push_data(%s) on %s\n", data, _topic_name);
 
-  if(_data.size() >= MAX_QUEUE) {
-    _data.erase(_data.begin());
+  // TODO : if _data.size() >= MAX_QUEUE
+  if(_data.next) {
+    clist_node_t* ret = clist_lpop(&_data);
+    free(container_of(ret, sub_data_t, node));
   }
 
   _cur_seq++;
-  _data.push_back(std::make_pair(data, size));
+
+  sub_data_t* pub_data = (sub_data_t*)malloc(sizeof(sub_data_t));
+  pub_data->node.next = NULL;
+  pub_data->data = data;
+  pub_data->size = size;
+
+  clist_rpush(&_data, &pub_data->node);
 
   if(_cur_seq <= _req_seq) {
-    App::publish(_topic_name, _cur_seq, data, size);
+    app_publish(_topic_name, _cur_seq, data, size);
   }
 }

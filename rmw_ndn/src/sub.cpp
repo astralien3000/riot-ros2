@@ -1,78 +1,86 @@
 #include "sub.hpp"
 
-#include "app.hpp"
+#include "app.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
-#include <string.h>
 
 using namespace rmw::ndn;
-using App = Application;
 
-Subscription::Subscription(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t))
-  : _state(UNSYNCHRONIZED_NOSENT)
-  , _seq(0)
-  , _timeout(MAX_TIMEOUT)
-  , _window(MIN_WINDOW)
-  , _deserialize(deserialize) {
+Subscription::Subscription(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t)) {
+  _seq = 0;
+  _timeout_us = MAX_TIMEOUT;
+  _window = MIN_WINDOW;
+  _deserialize = deserialize;
+  _data.next = NULL;
 
   _topic_name = (char*)malloc(strlen(topic_name));
   strcpy(_topic_name, topic_name);
-  App::add_subscription(this);
-  _last_interest_date = Timer::now() - _timeout;
-  update();
+  app_add_sub((sub_t*)this);
+  _last_interest_date_us = Timer::now() - _timeout_us;
+  sub_update((sub_t*)this);
 }
 
-void Subscription::push_data(unsigned int seq, const char* data, size_t size) {
+void sub_push_data(sub_t* sub, unsigned int seq, const char* data, size_t size) {
   DEBUG("push_data(%u, data, %u)\n", seq, (unsigned int)size);
 
-  if(_seq >= seq) {
+  if(sub->_seq >= seq) {
     return;
   }
 
-  _seq = seq;
-  _data.push_back(std::make_pair(data, size));
-  _state = SYNCHRONIZED_UPDATED;
+  sub->_seq = seq;
 
-  const Timer::us dur = Timer::now() - _last_interest_date;
-  if(dur < _timeout / 4) {
-    _timeout /= 2;
-    if(_timeout < MIN_TIMEOUT) {
-      _timeout = MIN_TIMEOUT;
+  sub_data_t* sub_data = (sub_data_t*)malloc(sizeof(sub_data_t));
+  sub_data->node.next = NULL;
+  sub_data->data = data;
+  sub_data->size = size;
+
+  clist_rpush(&sub->_data, &sub_data->node);
+
+  const Timer::us dur = Timer::now() - sub->_last_interest_date_us;
+  if(dur < sub->_timeout_us / 4) {
+    sub->_timeout_us /= 2;
+    if(sub->_timeout_us < Subscription::MIN_TIMEOUT) {
+      sub->_timeout_us = Subscription::MIN_TIMEOUT;
     }
   }
 
-  App::send_data_interest(_topic_name, _seq+1, _window, _timeout);
-  _last_interest_date = Timer::now();
-  _state = SYNCHRONIZED_OUTDATED;
+  app_send_data_interest(sub->_topic_name, sub->_seq+1, sub->_window, sub->_timeout_us);
+  sub->_last_interest_date_us = Timer::now();
 }
 
 void Subscription::on_timeout(void) {
-  _state = UNSYNCHRONIZED_NOSENT;
-  _timeout *= 2;
-  if(_timeout > MAX_TIMEOUT) {
-    _timeout = MAX_TIMEOUT;
+  _timeout_us *= 2;
+  if(_timeout_us > MAX_TIMEOUT) {
+    _timeout_us = MAX_TIMEOUT;
   }
 
-  App::send_sync_interest(_topic_name, _timeout);
-  _last_interest_date = Timer::now();
-  _state = UNSYNCHRONIZED_SENT;
+  app_send_sync_interest(_topic_name, _timeout_us);
+  _last_interest_date_us = Timer::now();
 }
 
-void Subscription::update(void) {
-  const Timer::us timeout_date = _last_interest_date + _timeout;
+void sub_update(sub_t* sub) {
+  Subscription* _sub = (Subscription*)sub;
+  const Timer::us timeout_date = sub->_last_interest_date_us + sub->_timeout_us;
   if(timeout_date <= Timer::now()) {
-    on_timeout();
+    _sub->on_timeout();
   }
 }
 
 bool Subscription::take(void* msg) {
-  if(_data.empty()) {
+  if(!can_take()) {
     return false;
   }
 
-  auto ret = _data.front();
-  _data.erase(_data.begin());
-  DEBUG("%i :: %i :: [%s] \n", std::get<1>(ret), _deserialize(msg, std::get<0>(ret), std::get<1>(ret)), std::get<0>(ret));
-  return std::get<1>(ret) == _deserialize(msg, std::get<0>(ret), std::get<1>(ret));
+  clist_node_t* _ret = clist_lpop(&_data);
+  sub_data_t* ret = container_of(_ret, sub_data_t, node);
+  const char* data = ret->data;
+  size_t size = ret->size;
+  free(ret);
+
+  DEBUG("%i :: %i :: [%s] \n", ret->size, _deserialize(msg, data, size), data);
+  return size == _deserialize(msg, data, size);
 }

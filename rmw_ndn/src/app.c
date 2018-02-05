@@ -1,7 +1,4 @@
-#include "app.hpp"
-
-#include "sub.hpp"
-#include "pub.hpp"
+#include "app.h"
 
 #include <ndn-riot/app.h>
 #include <ndn-riot/ndn.h>
@@ -10,6 +7,8 @@
 #include <ndn-riot/encoding/data.h>
 #include <ndn-riot/msg-type.h>
 
+#include <list.h>
+
 #include <random.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,7 +16,11 @@
 #define ENABLE_DEBUG 0
 #include <debug.h>
 
-using namespace rmw::ndn;
+typedef struct Application {
+  ndn_app_t* _app;
+  list_node_t _subs;
+  list_node_t _pubs;
+} Application;
 
 static const uint8_t ecc_key_pri[] = {
   0x38, 0x67, 0x54, 0x73, 0x8B, 0x72, 0x4C, 0xD6,
@@ -29,75 +32,58 @@ static const uint8_t ecc_key_pri[] = {
 static int _on_data(ndn_block_t* interest, ndn_block_t* data);
 static int _on_interest(ndn_block_t* interest);
 
-Application& Application::instance(void) {
-  static Application ret;
-  return ret;
+static Application _instance;
+
+void app_add_sub(sub_t* sub) {
+  list_add(&_instance._subs, &sub->node);
 }
 
-void Application::add_subscription(Subscription* sub) {
-  instance()._subs.push_back(sub);
+void app_rm_sub(sub_t* sub) {
+  list_remove(&_instance._subs, &sub->node);
 }
 
-void Application::rm_subscription(Subscription* sub) {
-  auto rm = instance()._subs.end();
-  for(auto it = instance()._subs.begin() ; it != instance()._subs.end() ; it++) {
-    if((*it) == sub) {
-      rm = it;
-      break;
-    }
-  }
-  instance()._subs.erase(rm);
-}
-
-void Application::add_publisher(Publisher* pub) {
-  instance()._pubs.push_back(pub);
+void app_add_pub(pub_t* pub) {
+  list_add(&_instance._pubs, &pub->node);
 
   char prefix[64] = { 0 };
-  snprintf(prefix, 32, "%s", pub->get_topic_name());
+  snprintf(prefix, 32, "%s", pub->_topic_name);
   ndn_shared_block_t* sp = ndn_name_from_uri(prefix, strlen(prefix));
   if (sp == NULL) {
     return;
   }
 
   // pass ownership of "sp" to the API
-  if (ndn_app_register_prefix(instance()._app, sp, _on_interest) != 0) {
+  if (ndn_app_register_prefix(_instance._app, sp, _on_interest) != 0) {
     return;
   }
 }
 
-void Application::rm_publisher(Publisher* pub) {
-  auto rm = instance()._pubs.end();
-  for(auto it = instance()._pubs.begin() ; it != instance()._pubs.end() ; it++) {
-    if((*it) == pub) {
-      rm = it;
-      break;
-    }
-  }
-  instance()._pubs.erase(rm);
+void app_rm_pub(pub_t* pub) {
+  list_remove(&_instance._pubs, &pub->node);
 }
 
-void Application::create(void) {
-  if(instance()._app != NULL) {
-    destroy();
+void app_create(void) {
+  if(_instance._app != NULL) {
+    app_destroy();
   }
-  instance()._app = ndn_app_create();
+  _instance._app = ndn_app_create();
 }
 
-void Application::destroy(void) {
-  if(instance()._app != NULL) {
-    ndn_app_destroy(instance()._app);
-    instance()._app = NULL;
+void app_destroy(void) {
+  if(_instance._app != NULL) {
+    ndn_app_destroy(_instance._app);
+    _instance._app = NULL;
   }
 }
 
-void Application::update(void) {
-  ndn_app_run_once(instance()._app);
-  for(auto it = instance()._subs.begin() ; it != instance()._subs.end() ; it++) {
-    (*it)->update();
+void app_update(void) {
+  ndn_app_run_once(_instance._app);
+  for(list_node_t* it = _instance._subs.next ; it != NULL ; it = it->next) {
+    sub_update(container_of(it, sub_t, node));
   }
 }
 
-void Application::send_sync_interest(const char* topic, unsigned int timeout) {
+void app_send_sync_interest(const char* topic, unsigned int timeout) {
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/sync/%lu", topic, random_uint32());
   DEBUG("Send interest %s\n", uri);
@@ -109,12 +95,12 @@ void Application::send_sync_interest(const char* topic, unsigned int timeout) {
   }
 
   uint32_t lifetime = timeout/1000;  // ms
-  ndn_app_express_interest(instance()._app, &sin->block, NULL, lifetime,
+  ndn_app_express_interest(_instance._app, &sin->block, NULL, lifetime,
                            _on_data, NULL);
   ndn_shared_block_release(sin);
 }
 
-void Application::send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout) {
+void app_send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout) {
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
   DEBUG("Send interest %s\n", uri);
@@ -126,28 +112,12 @@ void Application::send_data_interest(const char* topic, unsigned int seq, unsign
   }
 
   uint32_t lifetime = timeout/1000;  // ms
-  ndn_app_express_interest(instance()._app, &sin->block, NULL, lifetime,
+  ndn_app_express_interest(_instance._app, &sin->block, NULL, lifetime,
                            _on_data, NULL);
   ndn_shared_block_release(sin);
 }
 
-std::vector<Subscription*>::iterator Application::begin_subscriptions(void) {
-  return instance()._subs.begin();
-}
-
-std::vector<Subscription*>::iterator Application::end_subscriptions(void) {
-  return instance()._subs.end();
-}
-
-std::vector<Publisher*>::iterator Application::begin_publisher(void) {
-  return instance()._pubs.begin();
-}
-
-std::vector<Publisher*>::iterator Application::end_publisher(void) {
-  return instance()._pubs.end();
-}
-
-void Application::publish(const char* topic, unsigned int seq, const char* data, size_t size) {
+void app_publish(const char* topic, unsigned int seq, const char* data, size_t size) {
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
   DEBUG("Publish %s\n", uri);
@@ -174,7 +144,7 @@ void Application::publish(const char* topic, unsigned int seq, const char* data,
   ndn_shared_block_release(sdn);
 
   // pass ownership of "sd" to the API
-  if (ndn_app_put_data(instance()._app, sd) != 0) {
+  if (ndn_app_put_data(_instance._app, sd) != 0) {
     DEBUG("ERROR : ndn_app_put_data\n");
     return;
   }
@@ -203,9 +173,9 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
 
   const char* tmp_data = (const char*)(content.buf+2);
   size_t tmp_size = (size_t)*(const char*)(content.buf+1);
-  for(auto it = Application::begin_subscriptions() ; it != Application::end_subscriptions() ; it++) {
+  for(list_node_t* it = _instance._subs.next ; it != NULL ; it = it->next) {
     char uri[32] = {0};
-    snprintf(uri, sizeof(uri), "%s", (*it)->get_topic_name());
+    snprintf(uri, sizeof(uri), "%s", container_of(it, sub_t, node)->_topic_name);
 
     ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
     if (sin == NULL) {
@@ -217,7 +187,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
       ndn_name_component_t comp;
       ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&name)-1, &comp);
       unsigned int seq = atoi((const char*)comp.buf);
-      (*it)->push_data(seq, tmp_data, tmp_size);
+      sub_push_data(container_of(it, sub_t, node), seq, tmp_data, tmp_size);
     }
 
     ndn_shared_block_release(sin);
@@ -226,7 +196,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
   return NDN_APP_CONTINUE;
 }
 
-int send_sync(ndn_block_t& name, unsigned int seq, const char* data, size_t size) {
+int send_sync(ndn_block_t name, unsigned int seq, const char* data, size_t size) {
   DEBUG("send_sync(%u, %s, %u)\n", seq, data, (unsigned int)size);
 
   char strseq[32] = {0};
@@ -256,7 +226,7 @@ int send_sync(ndn_block_t& name, unsigned int seq, const char* data, size_t size
   ndn_shared_block_release(sdn);
 
   // pass ownership of "sd" to the API
-  if (ndn_app_put_data(Application::get_app(), sd) != 0) {
+  if (ndn_app_put_data(_instance._app, sd) != 0) {
     DEBUG("ERROR\n");
     return NDN_APP_ERROR;
   }
@@ -277,9 +247,9 @@ int _on_interest(ndn_block_t* interest)
 #endif
   DEBUG("\n");
 
-  for(auto it = Application::begin_publisher() ; it != Application::end_publisher() ; it++) {
+  for(list_node_t* it = _instance._pubs.next ; it != NULL ; it = it->next) {
     char uri[32] = {0};
-    snprintf(uri, sizeof(uri), "%s", (*it)->get_topic_name());
+    snprintf(uri, sizeof(uri), "%s", container_of(it, pub_t, node)->_topic_name);
 
     ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
     if (sin == NULL) {
@@ -295,7 +265,7 @@ int _on_interest(ndn_block_t* interest)
         unsigned int seq = 0;
         const char* data = NULL;
         size_t size = 0;
-        (*it)->get_sync_data(&seq, &data, &size);
+        pub_get_sync_data(container_of(it, pub_t, node), &seq, &data, &size);
         if(data != NULL) {
           send_sync(name, seq, data, size);
         }
@@ -305,7 +275,7 @@ int _on_interest(ndn_block_t* interest)
         ndn_name_component_t comp;
         ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&name)-1, &comp);
         unsigned int seq = atoi((const char*)comp.buf);
-        (*it)->on_interest(seq);
+        pub_on_interest(container_of(it, pub_t, node), seq);
       }
     }
 

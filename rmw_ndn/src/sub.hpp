@@ -1,6 +1,8 @@
 #ifndef SUB_HPP
 #define SUB_HPP
 
+#include "app.h"
+
 #include "timer.hpp"
 
 #include <vector>
@@ -9,19 +11,9 @@
 namespace rmw {
 namespace ndn {
 
-class Subscription {
-private:
-  using FIFO = std::vector<std::pair<const char*,size_t>>;
+class Subscription : sub_t {
 
-private:
-  enum State {
-    UNSYNCHRONIZED_NOSENT,
-    UNSYNCHRONIZED_SENT,
-    SYNCHRONIZED_OUTDATED,
-    SYNCHRONIZED_UPDATED,
-  };
-
-private:
+public:
   static const unsigned int MAX_TIMEOUT = 2000000; // 2s,   in us
   static const unsigned int MIN_TIMEOUT =   10000; // 10ms, in us
 
@@ -29,15 +21,7 @@ private:
   static const unsigned int MIN_WINDOW = 1;
 
 private:
-  char* _topic_name;
-  State _state;
-  unsigned int _seq;
-  Timer::us _timeout;
-  unsigned int _window;
-  FIFO _data;
-  Timer::us _last_interest_date;
-  
-  size_t (*_deserialize)(void*, const char*, size_t);
+
 
 public:
   Subscription(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t));
@@ -48,17 +32,17 @@ public:
   }
 
   inline bool can_take(void) {
-    return !_data.empty();
+    return _data.next;
   }
 
 public:
-  void push_data(unsigned int seq, const char* data, size_t size);
   void on_timeout(void);
 
-  void update(void);
 
   bool take(void* msg);
 };
+
+static_assert(sizeof(Subscription) == sizeof(sub_t), "ERROR");
 
 }
 }

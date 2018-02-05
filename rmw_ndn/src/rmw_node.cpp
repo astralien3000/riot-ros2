@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include "app.hpp"
+#include "app.h"
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
@@ -38,7 +38,7 @@ rmw_create_node(
   node->name = name;
   node->namespace_ = namespace_;
 
-  rmw::ndn::Application::create();
+  app_create();
 
   return node;
 }
@@ -48,6 +48,6 @@ rmw_destroy_node(rmw_node_t * node)
 {
   DEBUG("rmw_destroy_node" "\n");
   free(node);
-  rmw::ndn::Application::destroy();
+  app_destroy();
   return RMW_RET_OK;
 }

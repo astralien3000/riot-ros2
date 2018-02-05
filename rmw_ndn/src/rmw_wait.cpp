@@ -4,7 +4,7 @@
 
 #include <xtimer.h>
 
-#include "app.hpp"
+#include "app.h"
 #include "sub.hpp"
 
 #define ENABLE_DEBUG 0
@@ -44,7 +44,7 @@ rmw_wait(
 
   do {
     thread_yield();
-    rmw::ndn::Application::update();
+    app_update();
 
     bool stop = false;
 
