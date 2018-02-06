@@ -6,12 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sub.hpp"
+#include "sub.h"
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
-
-using Sub = rmw::ndn::Subscription;
 
 rmw_subscription_t *
 rmw_create_subscription(
@@ -32,7 +30,7 @@ rmw_create_subscription(
   ret->implementation_identifier = rmw_get_implementation_identifier();
   ret->topic_name = topic_name;
 
-  Sub* sub = new Sub(topic_name, tsdata->deserialize_);
+  sub_t* sub = sub_create(topic_name, tsdata->deserialize_);
   ret->data = (void*)sub;
 
   return ret;
@@ -43,7 +41,7 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
 {
   (void) node;
   DEBUG("rmw_destroy_subscription" "\n");
-  delete (Sub*)subscription->data;
+  sub_destroy((sub_t*)subscription->data);
   free(subscription);
   return RMW_RET_OK;
 }
@@ -68,8 +66,8 @@ rmw_take_with_info(
   (void) message_info;
   DEBUG("rmw_take_with_info" "\n");
 
-  Sub* sub = (Sub*)subscription->data;
-  *taken = sub->take(ros_message);
+  sub_t* sub = (sub_t*)subscription->data;
+  *taken = sub_take(sub, ros_message);
 
   return RMW_RET_OK;
 }

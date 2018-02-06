@@ -10,17 +10,16 @@
 extern "C" {
 #endif
 
-typedef struct sub_data {
+typedef struct raw_msg_data {
   clist_node_t node;
   const char* data;
   size_t size;
-} sub_data_t;
+} raw_msg_data_t;
 
 typedef struct sub {
   char* _topic_name;
   unsigned int _seq;
   uint32_t _timeout_us;
-  unsigned int _window;
   clist_node_t _data;
   uint32_t _last_interest_date_us;
   size_t (*_deserialize)(void*, const char*, size_t);

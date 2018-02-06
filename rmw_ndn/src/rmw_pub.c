@@ -6,12 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pub.hpp"
+#include "pub.h"
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
-
-using Pub = rmw::ndn::Publisher;
 
 rmw_publisher_t *
 rmw_create_publisher(
@@ -31,7 +29,7 @@ rmw_create_publisher(
   ret->implementation_identifier = rmw_get_implementation_identifier();
   ret->topic_name = topic_name;
 
-  Pub* pub = new Pub(topic_name, tsdata->serialize_);
+  pub_t* pub = pub_create(topic_name, tsdata->serialize_);
   ret->data = (void*)pub;
 
   return ret;
@@ -42,7 +40,7 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
 {
   (void) node;
   DEBUG("rmw_destroy_publisher" "\n");
-  delete (Pub*)publisher->data;
+  pub_destroy((pub_t*)publisher->data);
   free(publisher);
   return RMW_RET_OK;
 }
@@ -57,8 +55,8 @@ rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
   std_msgs__msg__String* msg = (std_msgs__msg__String*)ros_message;
   DEBUG("msg: %s\n", msg->data.data);
 
-  Pub* pub = (Pub*)publisher->data;
-  pub->push_data(ros_message);
+  pub_t* pub = (pub_t*)publisher->data;
+  pub_push_data(pub, ros_message);
 
   return RMW_RET_OK;
 }
