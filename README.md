@@ -43,21 +43,36 @@ All examples should be able to handle any RMW implementation (see Usage).
 
 ## Requirements
 
-Only Linux (preferred) and OSX (missing features) are supported.
-
 ### Ubuntu
 
-```
+```bash
 sudo apt install cmake git python3-pip python3-empy g++-multilib
 pip3 install vcstool
 ```
 
 If your arm-none-eabi-gcc is too old (< gcc 5) : 
 
-```
+```bash
 sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
 sudo apt-get update
 sudo apt install gcc-arm-embedded
+```
+
+### Fedora
+
+Required for ROS2 :
+
+```bash
+sudo dnf install cmake git python3-pip python3-empy python3-pyparsing
+pip3 install vcstool
+# if g++ is not already installed
+sudo dnf install gcc-c++
+```
+
+Required for RIOT (native) :
+
+```bash
+sudo dnf install glibc-devel.i686
 ```
 
 ### Others
