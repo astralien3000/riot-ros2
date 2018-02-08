@@ -30,6 +30,19 @@ if(NOT DEFINED BOARD)
     endif()
 endif()
 
+# Define RIOT
+set(RIOT 1)
+
+# Create the RIOT module's Makefile
+set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile")
+file(WRITE "${MAKEFILE_PATH}" "")
+file(APPEND "${MAKEFILE_PATH}" "MODULE = ${PROJECT_NAME}\n")
+file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
+
+# Create the RIOT module's Makefile.include
+set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile.include")
+file(WRITE "${MAKEFILE_INCLUDE_PATH}" "")
+
 ################################################################
 # Replace try_compile
 ################################################################
@@ -68,47 +81,73 @@ macro(add_executable target)
     # Foreach source arguments
     set(${target}_sources "")
     foreach(arg ${args_UNPARSED_ARGUMENTS})
-        # Copy source to the RIOT project
-        set(src_file ${CMAKE_CURRENT_SOURCE_DIR}/${arg})
-        set(dst_file ${CMAKE_CURRENT_BINARY_DIR}/cmake2riot/${target}/${arg})
-        configure_file(${src_file} ${dst_file} COPYONLY)
+        # Search source file
+        if(IS_ABSOLUTE ${arg})
+            set(src ${arg})
+        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${arg})
+            set(src ${arg})
+        elseif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${arg})
+            set(src ${CMAKE_CURRENT_BINARY_DIR}/${arg})
+        else()
+            message(ERROR "Could not find source : ${arg}")
+        endif()
+
+        # Add install rule for source file
+        if("${target}" STREQUAL "${PROJECT_NAME}")
+            install(FILES ${src} DESTINATION ${target})
+        else()
+            install(FILES ${src} DESTINATION ${PROJECT_NAME}/${target})
+        endif()
 
         # Add the source to ${target}_sources
-        set(${target}_sources ${${target}_sources} ${dst_file})
+        set(${target}_sources ${${target}_sources} ${arg})
+
+        # Add the source directory to ${target}_src_dirs
+        get_filename_component(dir ${src} DIRECTORY)
+        list(APPEND ${target}_src_dirs ${dir})
     endforeach(arg)
 
-    # Create the RIOT project's Makefile
-    set(MAKEFILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/cmake2riot/${target}/Makefile")
+    # Hack to get ament-generated *_BUILD_DEPENDS variables
+    unset(_AMENT_PACKAGE_NAME)
+    ament_package_xml()
+
+
+    # Fill the RIOT module's Makefile
     file(WRITE  "${MAKEFILE_PATH}" "APPLICATION = ${target}\n")
-    file(APPEND "${MAKEFILE_PATH}" "RIOTBASE ?= $ENV{HOME}/RIOT\n")
+    file(APPEND "${MAKEFILE_PATH}" "RIOTBASE ?= ${CMAKE_INSTALL_PREFIX}/RIOT\n")
     file(APPEND "${MAKEFILE_PATH}" "BOARD ?= ${BOARD}\n")
     file(APPEND "${MAKEFILE_PATH}" "QUIET ?= 1\n")
     file(APPEND "${MAKEFILE_PATH}" "WERROR ?= 0\n")
+
+    if("${target}" STREQUAL "${PROJECT_NAME}")
+        foreach(src ${${target}_sources})
+            if("${src}" MATCHES ".c$|.cpp$")
+                file(APPEND "${MAKEFILE_PATH}" "SRC += ${src}\n")
+            else()
+                message(WARNING "[cmake2riot] adding a header to library : ${src}")
+            endif()
+        endforeach()
+    endif()
+    file(APPEND "${MAKEFILE_PATH}" "CFLAGS += -DROS_PACKAGE_NAME=\\\"${PROJECT_NAME}\\\"\n")
+    file(APPEND "${MAKEFILE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile.include\n")
     file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.include\n")
 
-    # Add custom target to compile the target
-    add_custom_target(
-        ${target} ALL
-        COMMAND make
-        DEPENDS ${${target}_sources} ${MAKEFILE_PATH}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmake2riot/${target}
-        )
+    # Fill the RIOT module's Makefile.include
+    foreach(dep ${${PROJECT_NAME}_BUILD_DEPENDS})
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "DIRS += ${CMAKE_INSTALL_PREFIX}/${dep}\n")
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${dep}\n")
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${dep}/Makefile.include\n")
+    endforeach()
+    foreach(idir ${${PROJECT_NAME}_INCLUDE_DIRS})
+      file(APPEND "${MAKEFILE_INCLUDE_PATH}" "INCLUDES += -I${idir}\n")
+    endforeach()
 
-    # Add custom target to flash the target
-    add_custom_target(
-        ${target}-flash
-        COMMAND make flash
-        DEPENDS ${target}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmake2riot/${target}
-        )
+    # Add dummy executable target to enable related commands
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "int main() {}")
+    _add_executable(${target} "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
 
-    # Add custom target to run "make term" on the target
-    add_custom_target(
-        ${target}-term
-        COMMAND make term
-        DEPENDS ${target}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmake2riot/${target}
-        )
+    # Add custom target to trigger sources generation if any
+    add_custom_target(${target}_dummy ALL DEPENDS ${${target}_sources})
 endmacro()
 
 ################################################################
@@ -120,16 +159,6 @@ endmacro()
 #             source1 [source2 ...])
 #
 ################################################################
-# Create the RIOT module's Makefile
-set(MAKEFILE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile")
-file(WRITE "${MAKEFILE_PATH}" "")
-file(APPEND "${MAKEFILE_PATH}" "MODULE = ${PROJECT_NAME}\n")
-file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.base\n")
-
-# Create the RIOT module's Makefile.include
-set(MAKEFILE_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile.include")
-file(WRITE "${MAKEFILE_INCLUDE_PATH}" "")
-
 function(add_library target)
     message("[cmake2riot] executing custom add_library command")
 
@@ -236,7 +265,7 @@ function(add_library target)
         file(APPEND "${MAKEFILE_INCLUDE_PATH}" "USEMODULE += ${target}\n")
     endif()
 
-    # Add custom target to compile the target
+    # Add dummy library target to enable related commands
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dummy.c" "")
     _add_library(${target} STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.c")
 
