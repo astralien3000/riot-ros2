@@ -145,6 +145,27 @@ On a second terminal :
 (cd install/listener_c && make PORT=tap1 all term)
 ```
 
+### Board to Linux example
+
+This example have been tested with a [samr21-xpro](https://github.com/RIOT-OS/RIOT/wiki/Board%3A-SAMR21-xpro), but should work with any RIOT-supported board that can communicate via UART with a computer.
+
+Setup the tap interface :
+```sh
+./install/RIOT/dist/tools/tapsetup/tapsetup
+```
+
+To flash the board, and enable the serial link :
+```sh
+(cd install/talker_c && make BOARD=samr21-xpro PORT=tap0 flash term)
+```
+
+To run the native application :
+```sh
+(cd install/listener_c && make BOARD=native PORT=tap1 all term)
+```
+
+The `talker_c` and `listener_c` apps should be seamlessly switchable between the board and native.
+
 # Troubleshooting
 
 If this command fails :
