@@ -6,10 +6,44 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sub.h"
+#include "app.h"
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
+
+static sub_t* _sub_create(const char* topic_name, size_t (*deserialize)(void*, const char*, size_t)) {
+  sub_t* sub = (sub_t*)malloc(sizeof(sub_t));
+  sub->_seq = 0;
+  sub->_timeout_us = 0;
+  sub->_last_interest_date_us = 0;
+  sub->_deserialize = deserialize;
+  sub->_data.next = NULL;
+
+  sub->_topic_name = (char*)malloc(strlen(topic_name));
+  strcpy(sub->_topic_name, topic_name);
+  app_add_sub(sub);
+  return sub;
+}
+
+static void _sub_destroy(sub_t* sub) {
+  app_rm_sub(sub);
+  free(sub->_topic_name);
+  free(sub);
+}
+
+static bool _sub_take(sub_t* sub, void* msg) {
+  if(!sub->_data.next) {
+    return false;
+  }
+
+  clist_node_t* _ret = clist_lpop(&sub->_data);
+  raw_msg_data_t* ret = container_of(_ret, raw_msg_data_t, node);
+  const char* data = ret->data;
+  size_t size = ret->size;
+  free(ret);
+
+  return size == sub->_deserialize(msg, data, size);
+}
 
 rmw_subscription_t *
 rmw_create_subscription(
@@ -30,7 +64,7 @@ rmw_create_subscription(
   ret->implementation_identifier = rmw_get_implementation_identifier();
   ret->topic_name = topic_name;
 
-  sub_t* sub = sub_create(topic_name, tsdata->deserialize_);
+  sub_t* sub = _sub_create(topic_name, tsdata->deserialize_);
   ret->data = (void*)sub;
 
   return ret;
@@ -41,7 +75,7 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
 {
   (void) node;
   DEBUG("rmw_destroy_subscription" "\n");
-  sub_destroy((sub_t*)subscription->data);
+  _sub_destroy((sub_t*)subscription->data);
   free(subscription);
   return RMW_RET_OK;
 }
@@ -67,7 +101,7 @@ rmw_take_with_info(
   DEBUG("rmw_take_with_info" "\n");
 
   sub_t* sub = (sub_t*)subscription->data;
-  *taken = sub_take(sub, ros_message);
+  *taken = _sub_take(sub, ros_message);
 
   return RMW_RET_OK;
 }

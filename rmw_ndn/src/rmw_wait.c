@@ -5,7 +5,6 @@
 #include <xtimer.h>
 
 #include "app.h"
-#include "sub.h"
 
 #define ENABLE_DEBUG 0
 #include <debug.h>
@@ -48,7 +47,7 @@ rmw_wait(
 
     for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
       sub_t* sub = (sub_t*)subscriptions->subscribers[i];
-      if(sub_can_take(sub)) {
+      if(sub->_data.next) {
         DEBUG("[%i] => %p can take !\n", (int)i, subscriptions->subscribers[i]);
         stop = true;
       }
@@ -57,7 +56,7 @@ rmw_wait(
     if(stop) {
       for(size_t i = 0 ; i < subscriptions->subscriber_count ; i++) {
         sub_t* sub = (sub_t*)subscriptions->subscribers[i];
-        if(!(sub_can_take(sub))) {
+        if(!sub->_data.next) {
           subscriptions->subscribers[i] = NULL;
         }
       }

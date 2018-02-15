@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,25 +42,10 @@ void app_rm_sub(sub_t* sub);
 void app_add_pub(pub_t* pub);
 void app_rm_pub(pub_t* pub);
 
-void app_send_sync_interest(const char* topic, unsigned int timeout);
-void app_send_data_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout);
-
-void app_publish(const char* topic, unsigned int seq, const char* data, size_t size);
-
 void app_create(void);
 void app_destroy(void);
 
 void app_update(void);
-
-// sub.h
-
-void sub_update(sub_t* sub);
-void sub_push_data(sub_t* sub, unsigned int seq, const char* data, size_t size);
-
-// pub.h
-
-void pub_get_sync_data(pub_t* pub, unsigned int* seq, const char** data, size_t* size);
-void pub_on_interest(pub_t* pub, unsigned int seq);
 
 #ifdef __cplusplus
 }
