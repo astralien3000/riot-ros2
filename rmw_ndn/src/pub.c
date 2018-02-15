@@ -26,6 +26,7 @@ pub_t* pub_create(const char* topic_name, size_t (*serialize)(const void*, char*
 }
 
 void pub_destroy(pub_t* pub) {
+  free(pub->_topic_name);
   free(pub);
 }
 
@@ -67,6 +68,7 @@ void pub_push_data(pub_t* pub, const void* msg) {
   // TODO : if _data.size() >= MAX_QUEUE
   if(pub->_data.next) {
     clist_node_t* ret = clist_lpop(&pub->_data);
+    free(container_of(ret, raw_msg_data_t, node)->data);
     free(container_of(ret, raw_msg_data_t, node));
   }
 

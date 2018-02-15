@@ -35,6 +35,7 @@ sub_t* sub_create(const char* topic_name, size_t (*deserialize)(void*, const cha
 }
 
 void sub_destroy(sub_t* sub) {
+  free(sub->_topic_name);
   free(sub);
 }
 
