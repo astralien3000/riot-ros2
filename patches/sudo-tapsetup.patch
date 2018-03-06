@@ -1,0 +1,86 @@
+38,39c38,39
+<             sudo kldload if_bridge
+<             sudo ifconfig ${BRNAME} create || exit 1 ;;
+---
+>              kldload if_bridge
+>              ifconfig ${BRNAME} create || exit 1 ;;
+41c41
+<             sudo ip link add name ${BRNAME} type bridge || exit 1
+---
+>              ip link add name ${BRNAME} type bridge || exit 1
+43c43
+<                 sudo -s sh -c "echo 1  > /proc/sys/net/ipv6/conf/${BRNAME}/disable_ipv6" || exit 1
+---
+>                  -s sh -c "echo 1  > /proc/sys/net/ipv6/conf/${BRNAME}/disable_ipv6" || exit 1
+46c46
+<             sudo ifconfig ${BRNAME} create || exit 1 ;;
+---
+>              ifconfig ${BRNAME} create || exit 1 ;;
+55c55
+<             sudo ifconfig ${BRNAME} up || exit 1 ;;
+---
+>              ifconfig ${BRNAME} up || exit 1 ;;
+57c57
+<             sudo ip link set ${BRNAME} up || exit 1 ;;
+---
+>              ip link set ${BRNAME} up || exit 1 ;;
+68,70c68,70
+<             sudo sysctl net.link.tap.user_open=0
+<             sudo kldunload if_tap || exit 1
+<             sudo kldunload if_bridge || exit 1 ;;
+---
+>              sysctl net.link.tap.user_open=0
+>              kldunload if_tap || exit 1
+>              kldunload if_bridge || exit 1 ;;
+73c73
+<                 sudo ip link delete "${IF}"
+---
+>                  ip link delete "${IF}"
+76c76
+<             sudo ip link delete ${BRNAME} || exit 1 ;;
+---
+>              ip link delete ${BRNAME} || exit 1 ;;
+78c78
+<             sudo ifconfig ${BRNAME} destroy || exit 1 ;;
+---
+>              ifconfig ${BRNAME} destroy || exit 1 ;;
+87,88c87,88
+<             sudo kldload if_tap || exit 1
+<             sudo sysctl net.link.tap.user_open=1 ;;
+---
+>              kldload if_tap || exit 1
+>              sysctl net.link.tap.user_open=1 ;;
+98,101c98,101
+<             sudo ifconfig tap${N} create || exit 1
+<             sudo chown ${USER} /dev/tap${N} || exit 1
+<             sudo ifconfig ${BRNAME} addm tap${N} || exit 1
+<             sudo ifconfig tap${N} up || exit 1 ;;
+---
+>              ifconfig tap${N} create || exit 1
+>              chown ${USER} /dev/tap${N} || exit 1
+>              ifconfig ${BRNAME} addm tap${N} || exit 1
+>              ifconfig tap${N} up || exit 1 ;;
+104c104
+<             sudo ip tuntap add dev ${TAPNAME}${N} mode tap user ${USER} || exit 1
+---
+>              ip tuntap add dev ${TAPNAME}${N} mode tap user ${USER} || exit 1
+106c106
+<                 sudo -s sh -c "echo 1  > /proc/sys/net/ipv6/conf/${TAPNAME}${N}/disable_ipv6" || exit 1
+---
+>                  -s sh -c "echo 1  > /proc/sys/net/ipv6/conf/${TAPNAME}${N}/disable_ipv6" || exit 1
+108,109c108,109
+<             sudo ip link set dev ${TAPNAME}${N} master ${BRNAME} || exit 1
+<             sudo ip link set ${TAPNAME}${N} up || exit 1 ;;
+---
+>              ip link set dev ${TAPNAME}${N} master ${BRNAME} || exit 1
+>              ip link set ${TAPNAME}${N} up || exit 1 ;;
+111c111
+<             sudo chown ${USER} /dev/tap${N} || exit 1
+---
+>              chown ${USER} /dev/tap${N} || exit 1
+114,115c114,115
+<             sudo ifconfig ${BRNAME} addm tap${N} || exit 1
+<             sudo ifconfig tap${N} up || exit 1 ;;
+---
+>              ifconfig ${BRNAME} addm tap${N} || exit 1
+>              ifconfig tap${N} up || exit 1 ;;

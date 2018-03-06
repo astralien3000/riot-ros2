@@ -1,0 +1,5 @@
+104,105c104
+<              #ip tuntap add dev ${TAPNAME}${N} mode tap user ${USER} || exit 1
+< 	     ip tuntap add dev ${TAPNAME}${N} mode tap || exit 1
+---
+>              ip tuntap add dev ${TAPNAME}${N} mode tap user ${USER} || exit 1
