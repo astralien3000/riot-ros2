@@ -17,8 +17,8 @@ repositories:
     version: 0.4.0
   ros2/rcutils:
     type: git
-    url: https://github.com/ros2/rcutils.git
-    version: 0.4.0
+    url: https://github.com/astralien3000/rcutils.git
+    version: riot
   ros2/rcl:
     type: git
     url: https://github.com/ros2/rcl.git
