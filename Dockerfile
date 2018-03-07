@@ -3,6 +3,9 @@ FROM ubuntu:16.04
 #--------------------
 # General setup
 #--------------------
+# setup download url
+ENV DOWNLOAD_URL https://raw.githubusercontent.com/astralien3000/riot-ros2/master
+
 # setup environment
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
@@ -32,8 +35,8 @@ RUN apt install -y wget
 #--------------------
 WORKDIR /root
 RUN mkdir -p /root/ros2_riot_ws/src
-RUN cd /root/ros2_riot_ws && wget https://raw.githubusercontent.com/erlerobot/riot-ros2/base/riot-ros2.repos
-RUN cd /root/ros2_riot_ws && wget https://raw.githubusercontent.com/erlerobot/riot-ros2/base/ament2riot.cmake
+RUN cd /root/ros2_riot_ws && wget ${DOWNLOAD_URL}/riot-ros2.repos
+RUN cd /root/ros2_riot_ws && wget ${DOWNLOAD_URL}/ament2riot.cmake
 RUN cd /root/ros2_riot_ws && vcs import src < riot-ros2.repos
 # AMENT_IGNORE test_msgs package
 RUN cd /root/ros2_riot_ws && touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNORE
@@ -42,7 +45,7 @@ RUN cd /root/ros2_riot_ws && touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNOR
 # # Tooling and compiling (split but altogether)
 # #--------------------
 # RUN mkdir -p /root/ros2_riot_ws/tools/src
-# RUN cd /root/ros2_riot_ws/tools && wget https://raw.githubusercontent.com/erlerobot/riot-ros2/base/riot-ros2-tools.repos
+# RUN cd /root/ros2_riot_ws/tools && wget ${DOWNLOAD_URL}/riot-ros2-tools.repos
 # RUN cd /root/ros2_riot_ws/tools && vcs import src < riot-ros2-tools.repos
 # RUN pip3 install pyparsing
 # RUN cd /root/ros2_riot_ws/tools && ./src/ament/ament_tools/scripts/ament.py build --symlink-install
@@ -53,7 +56,7 @@ RUN cd /root/ros2_riot_ws && touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNOR
 # Tooling
 #--------------------
 # RUN mkdir -p /root/ros2_riot_ws/tools/src
-RUN cd /root/ros2_riot_ws && wget https://raw.githubusercontent.com/erlerobot/riot-ros2/base/riot-ros2-tools.repos
+RUN cd /root/ros2_riot_ws && wget ${DOWNLOAD_URL}/riot-ros2-tools.repos
 RUN cd /root/ros2_riot_ws && vcs import src < riot-ros2-tools.repos
 RUN pip3 install pyparsing
 
