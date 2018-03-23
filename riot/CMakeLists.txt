@@ -8,7 +8,7 @@ find_package(ament_cmake REQUIRED)
 
 ExternalProject_Add(RIOT
     GIT_REPOSITORY https://github.com/astralien3000/RIOT.git
-    GIT_TAG 27c86365a68bcdef99534e8a63f44305af810f0a
+    GIT_TAG e5aad80350c07b0f6bcc18d21e8080d939a2f768
 
     SOURCE_DIR RIOT
 

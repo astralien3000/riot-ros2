@@ -11,14 +11,17 @@
 #define ENABLE_DEBUG 0
 #include <debug.h>
 
+#define MAX_QUEUE (1)
+
 pub_t* _pub_create(const char* topic_name, size_t (*serialize)(const void*, char*, size_t)) {
   pub_t* pub = (pub_t*)malloc(sizeof(pub_t));
   pub->_cur_seq = 0;
   pub->_req_seq = 0;
+  pub->_snd_seq = 0;
   pub->_serialize = serialize;
   pub->_data.next = NULL;
 
-  pub->_topic_name = (char*)malloc(strlen(topic_name));
+  pub->_topic_name = (char*)malloc(strlen(topic_name)+1);
   strcpy(pub->_topic_name, topic_name);
   app_add_pub(pub);
   return pub;
@@ -38,21 +41,23 @@ void _pub_push_data(pub_t* pub, const void* msg) {
   data = (char*)realloc(data, size);
   DEBUG("push_data(%s) on %s\n", data, pub->_topic_name);
 
-  // TODO : if _data.size() >= MAX_QUEUE
-  if(pub->_data.next) {
-    clist_node_t* ret = clist_lpop(&pub->_data);
-    free(container_of(ret, raw_msg_data_t, node)->data);
-    free(container_of(ret, raw_msg_data_t, node));
-  }
-
   pub->_cur_seq++;
 
-  raw_msg_data_t* pub_data = (raw_msg_data_t*)malloc(sizeof(raw_msg_data_t));
-  pub_data->node.next = NULL;
-  pub_data->data = data;
-  pub_data->size = size;
+  clist_node_t* clist_node = clist_lpop(&pub->_data);
+  if(clist_node) {
+    raw_msg_data_t* raw_msg = container_of(clist_node, raw_msg_data_t, clist_node);
+    DEBUG("free[%i] on %s\n", (int)raw_msg->_seq, pub->_topic_name);
+    free(raw_msg->data);
+    free(raw_msg);
+  }
 
-  clist_rpush(&pub->_data, &pub_data->node);
+  raw_msg_data_t* raw_msg = (raw_msg_data_t*)malloc(sizeof(raw_msg_data_t));
+  raw_msg->clist_node.next = NULL;
+  raw_msg->_seq = pub->_cur_seq;
+  raw_msg->data = data;
+  raw_msg->size = size;
+
+  clist_rpush(&pub->_data, &raw_msg->clist_node);
 }
 
 rmw_publisher_t *

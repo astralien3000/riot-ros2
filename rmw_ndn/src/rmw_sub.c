@@ -37,7 +37,7 @@ static bool _sub_take(sub_t* sub, void* msg) {
   }
 
   clist_node_t* _ret = clist_lpop(&sub->_data);
-  raw_msg_data_t* ret = container_of(_ret, raw_msg_data_t, node);
+  raw_msg_data_t* ret = container_of(_ret, raw_msg_data_t, clist_node);
   const char* data = ret->data;
   size_t size = ret->size;
   free(ret);
