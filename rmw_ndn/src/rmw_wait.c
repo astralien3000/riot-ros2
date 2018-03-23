@@ -40,8 +40,8 @@ rmw_wait(
   const uint32_t end = begin + timeout;
 
   do {
-    thread_yield();
     app_update();
+    thread_yield();
 
     bool stop = false;
 

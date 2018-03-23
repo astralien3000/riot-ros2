@@ -42,15 +42,15 @@ static app_t _instance;
 void app_add_sub(sub_t* sub) {
   sub->_timeout_us = MAX_TIMEOUT;
   sub->_last_interest_date_us = xtimer_now_usec() - sub->_timeout_us;
-  list_add(&_instance._subs, &sub->node);
+  list_add(&_instance._subs, &sub->clist_node);
 }
 
 void app_rm_sub(sub_t* sub) {
-  list_remove(&_instance._subs, &sub->node);
+  list_remove(&_instance._subs, &sub->clist_node);
 }
 
 void app_add_pub(pub_t* pub) {
-  list_add(&_instance._pubs, &pub->node);
+  list_add(&_instance._pubs, &pub->clist_node);
 
   char prefix[64] = { 0 };
   snprintf(prefix, 32, "%s", pub->_topic_name);
@@ -66,7 +66,7 @@ void app_add_pub(pub_t* pub) {
 }
 
 void app_rm_pub(pub_t* pub) {
-  list_remove(&_instance._pubs, &pub->node);
+  list_remove(&_instance._pubs, &pub->clist_node);
 }
 
 void app_create(void) {
@@ -100,10 +100,12 @@ static void _send_topic_sync_ndn_interest(const char* topic, unsigned int timeou
   ndn_shared_block_release(sin);
 }
 
+static char buff[] = {'a', 0};
+
 static void _send_topic_data_ndn_data(const char* topic, unsigned int seq, const char* data, size_t size) {
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
-  DEBUG("Publish %s\n", uri);
+  DEBUG("send_data(%u, %s, %u)\n", seq, data, (unsigned int)size);
 
   ndn_shared_block_t* sdn = ndn_name_from_uri(uri, strlen(uri));
   if (sdn == NULL) {
@@ -133,11 +135,22 @@ static void _send_topic_data_ndn_data(const char* topic, unsigned int seq, const
   }
 }
 
+static int _send_if_interest(clist_node_t * clist_node, void * arg) {
+  pub_t* pub = (pub_t*)arg;
+  raw_msg_data_t* raw_msg = container_of(clist_node, raw_msg_data_t, clist_node);
+
+  if(raw_msg->_seq <= pub->_req_seq && raw_msg->_seq > pub->_snd_seq) {
+    DEBUG("_send_if_interest(%s)[%i] on %s\n", raw_msg->data, raw_msg->_seq, pub->_topic_name);
+    pub->_snd_seq = raw_msg->_seq;
+    _send_topic_data_ndn_data(pub->_topic_name, raw_msg->_seq, raw_msg->data, raw_msg->size);
+  }
+}
+
 void app_update(void) {
   ndn_app_run_once(_instance._app);
 
   for(list_node_t* it = _instance._subs.next ; it != NULL ; it = it->next) {
-    sub_t* sub = container_of(it, sub_t, node);
+    sub_t* sub = container_of(it, sub_t, clist_node);
     const uint32_t timeout_date = sub->_last_interest_date_us + sub->_timeout_us;
     if(timeout_date <= xtimer_now_usec()) {
       sub->_timeout_us *= 2;
@@ -151,11 +164,8 @@ void app_update(void) {
   }
 
   for(list_node_t* it = _instance._pubs.next ; it != NULL ; it = it->next) {
-    pub_t* pub = container_of(it, pub_t, node);
-    if(pub->_data.next && pub->_cur_seq <= pub->_req_seq) {
-      raw_msg_data_t* pub_data = container_of(pub->_data.next, raw_msg_data_t, node);
-      _send_topic_data_ndn_data(pub->_topic_name, pub->_cur_seq, pub_data->data, pub_data->size);
-    }
+    pub_t* pub = container_of(it, pub_t, clist_node);
+    clist_foreach(&pub->_data, _send_if_interest, pub);
   }
 }
 
@@ -186,11 +196,11 @@ static void _sub_push_data(sub_t* sub, unsigned int seq, const char* data, size_
   sub->_seq = seq;
 
   raw_msg_data_t* sub_data = (raw_msg_data_t*)malloc(sizeof(raw_msg_data_t));
-  sub_data->node.next = NULL;
+  sub_data->clist_node.next = NULL;
   sub_data->data = data;
   sub_data->size = size;
 
-  clist_rpush(&sub->_data, &sub_data->node);
+  clist_rpush(&sub->_data, &sub_data->clist_node);
 
   const uint32_t dur = xtimer_now_usec() - sub->_last_interest_date_us;
   if(dur < sub->_timeout_us / 4) {
@@ -229,7 +239,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
   size_t tmp_size = (size_t)*(const char*)(content.buf+1);
   for(list_node_t* it = _instance._subs.next ; it != NULL ; it = it->next) {
     char uri[32] = {0};
-    snprintf(uri, sizeof(uri), "%s", container_of(it, sub_t, node)->_topic_name);
+    snprintf(uri, sizeof(uri), "%s", container_of(it, sub_t, clist_node)->_topic_name);
 
     ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
     if (sin == NULL) {
@@ -241,7 +251,7 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
       ndn_name_component_t comp;
       ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&name)-1, &comp);
       unsigned int seq = atoi((const char*)comp.buf);
-      _sub_push_data(container_of(it, sub_t, node), seq, tmp_data, tmp_size);
+      _sub_push_data(container_of(it, sub_t, clist_node), seq, tmp_data, tmp_size);
     }
 
     ndn_shared_block_release(sin);
@@ -292,7 +302,7 @@ static void _pub_get_sync_data(pub_t* pub, unsigned int* seq, const char** data,
   *seq = pub->_cur_seq;
   if(pub->_data.next) {
     clist_node_t* _ret = clist_rpeek(&pub->_data);
-    raw_msg_data_t* ret = container_of(_ret, raw_msg_data_t, node);
+    raw_msg_data_t* ret = container_of(_ret, raw_msg_data_t, clist_node);
     *data = ret->data;
     *size = ret->size;
     DEBUG("SYNC DATA : [%s]\n", *data);
@@ -303,16 +313,12 @@ static void _pub_get_sync_data(pub_t* pub, unsigned int* seq, const char** data,
   }
 }
 
-static void _pub_on_interest(pub_t* pub, unsigned int seq) {
+static void _pub_update_req_seq(pub_t* pub, unsigned int seq) {
   if(pub->_req_seq < seq) {
     pub->_req_seq = seq;
   }
 
-  if(pub->_cur_seq <= pub->_req_seq) {
-    clist_node_t* _ret = clist_rpeek(&pub->_data);
-    raw_msg_data_t* ret = container_of(_ret, raw_msg_data_t, node);
-    _send_topic_data_ndn_data(pub->_topic_name, pub->_cur_seq, ret->data, ret->size);
-  }
+  clist_foreach(&pub->_data, _send_if_interest, pub);
 }
 
 static int _on_interest(ndn_block_t* interest)
@@ -322,7 +328,7 @@ static int _on_interest(ndn_block_t* interest)
     return NDN_APP_ERROR;
   }
 
-  DEBUG("Interest received");
+  DEBUG("Interest received ");
 #if ENABLE_DEBUG
   ndn_name_print(&name);
 #endif
@@ -330,7 +336,8 @@ static int _on_interest(ndn_block_t* interest)
 
   for(list_node_t* it = _instance._pubs.next ; it != NULL ; it = it->next) {
     char uri[32] = {0};
-    snprintf(uri, sizeof(uri), "%s", container_of(it, pub_t, node)->_topic_name);
+    snprintf(uri, sizeof(uri), "%s", container_of(it, pub_t, clist_node)->_topic_name);
+    DEBUG("compare to %s\n", container_of(it, pub_t, clist_node)->_topic_name);
 
     ndn_shared_block_t* sin = ndn_name_from_uri(uri, strlen(uri));
     if (sin == NULL) {
@@ -346,7 +353,7 @@ static int _on_interest(ndn_block_t* interest)
         unsigned int seq = 0;
         const char* data = NULL;
         size_t size = 0;
-        _pub_get_sync_data(container_of(it, pub_t, node), &seq, &data, &size);
+        _pub_get_sync_data(container_of(it, pub_t, clist_node), &seq, &data, &size);
         if(data != NULL) {
           _send_topic_sync_ndn_data(name, seq, data, size);
         }
@@ -356,7 +363,7 @@ static int _on_interest(ndn_block_t* interest)
         ndn_name_component_t comp;
         ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&name)-1, &comp);
         unsigned int seq = atoi((const char*)comp.buf);
-        _pub_on_interest(container_of(it, pub_t, node), seq);
+        _pub_update_req_seq(container_of(it, pub_t, clist_node), seq);
       }
     }
 
