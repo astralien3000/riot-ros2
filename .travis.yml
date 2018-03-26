@@ -28,14 +28,14 @@ install:
 # Get sources
  - mkdir -p ~/ros2_riot_ws/src
  - cd ~/ros2_riot_ws
- - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
- - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/ament2riot.cmake
+ - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/$TRAVIS_COMMIT/riot-ros2.repos
+ - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/$TRAVIS_COMMIT/ament2riot.cmake
  - vcs import src < riot-ros2.repos
  - touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNORE
 # Get tools
  - mkdir -p ~/ros2_riot_ws/tools/src
  - cd ~/ros2_riot_ws/tools
- - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2-tools.repos
+ - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/$TRAVIS_COMMIT/riot-ros2-tools.repos
  - vcs import src < riot-ros2-tools.repos
 script:
 # Build tools
