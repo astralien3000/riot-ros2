@@ -31,6 +31,7 @@ install:
  - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/$TRAVIS_COMMIT/riot-ros2.repos
  - wget https://raw.githubusercontent.com/astralien3000/riot-ros2/$TRAVIS_COMMIT/ament2riot.cmake
  - vcs import src < riot-ros2.repos
+ - (cd src/riot-ros2 && git checkout $TRAVIS_COMMIT)
  - touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNORE
 # Get tools
  - mkdir -p ~/ros2_riot_ws/tools/src
