@@ -51,6 +51,17 @@ macro(try_compile)
 endmacro()
 
 ################################################################
+# riot_add_config
+################################################################
+#
+# riot_add_config(<name> <cfg_str>)
+#
+################################################################
+macro(riot_add_config target cfg)
+  set(${target}_cfg ${${target}_cfg} ${cfg})
+endmacro()
+
+################################################################
 # Replace add_executable
 ################################################################
 #
@@ -129,6 +140,9 @@ macro(add_executable target)
         endforeach()
     endif()
     file(APPEND "${MAKEFILE_PATH}" "CFLAGS += -DROS_PACKAGE_NAME=\\\"${PROJECT_NAME}\\\"\n")
+    foreach(cfg ${${target}_cfg})
+      file(APPEND "${MAKEFILE_PATH}" "${cfg}\n")
+    endforeach()
     file(APPEND "${MAKEFILE_PATH}" "include ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Makefile.include\n")
     file(APPEND "${MAKEFILE_PATH}" "include $(RIOTBASE)/Makefile.include\n")
 
