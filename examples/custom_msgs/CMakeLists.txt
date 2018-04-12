@@ -12,6 +12,8 @@ find_package(rosidl_typesupport_test REQUIRED)
 
 set(msg_files
   "msg/Gyro.msg"
+  "msg/IMU.msg"
+  "msg/DroneMotors.msg"
 )
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
