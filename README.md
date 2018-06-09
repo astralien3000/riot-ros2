@@ -57,6 +57,12 @@ sudo apt-get update
 sudo apt install gcc-arm-embedded
 ```
 
+Required for RIOT (native) :
+
+```bash
+sudo apt install libc6-dev-i386
+```
+
 ### Fedora
 
 Required for ROS2 :
