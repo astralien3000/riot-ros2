@@ -10,18 +10,18 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 
 | Layer | Package | ROS2 | RIOT-ROS2 |
 |-|-|-|-|
-| ROS Client Library bindings | rclc   | no [(open PR)](https://github.com/ros2/rclc/pull/8) | yes |
-|                             | rclcpp | yes | no |
-| ROS Client Library | rcl | yes | yes |
-| ROS MiddleWare | rmw_fastrtps | yes | no |
-|                | rmw_ndn      | no | yes |
-| ROS IDL Generators | generator_c   | yes | yes |
-|                    | generator_cpp | yes | no  |
-| ROS IDL Type Support | introspection_c   | yes | no  |
-|                      | introspection_cpp | yes | no  |
-|                      | cbor              | no  | yes |
-| ROS IDL Interfaces | common_interfaces | yes | yes |
-|                    | rcl_interfaces    | yes | yes, excepted test_msgs |
+| ROS Client Library bindings | rclc   | :heavy_check_mark: | :heavy_check_mark: |
+|                             | rclcpp | :heavy_check_mark: | :x: |
+| ROS Client Library | rcl | :heavy_check_mark: | :heavy_check_mark: |
+| ROS MiddleWare | rmw_fastrtps | :heavy_check_mark: | :x: |
+|                | rmw_ndn      | :grey_question: | :heavy_check_mark: |
+| ROS IDL Generators | generator_c   | :heavy_check_mark: | :heavy_check_mark: |
+|                    | generator_cpp | :heavy_check_mark: | :x:  |
+| ROS IDL Type Support | introspection_c   | :heavy_check_mark: | :x:  |
+|                      | introspection_cpp | :heavy_check_mark: | :x:  |
+|                      | cbor              | :grey_question:  | :heavy_check_mark: |
+| ROS IDL Interfaces | common_interfaces | :heavy_check_mark: | :heavy_check_mark: |
+|                    | rcl_interfaces    | :heavy_check_mark: | :heavy_check_mark: |
 
 
 # Examples
