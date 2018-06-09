@@ -1,0 +1,67 @@
+repositories:
+  ament/ament_tools:
+    type: git
+    url: https://github.com/ament/ament_tools.git
+    version: 0.4.0
+  ament/ament_package:
+    type: git
+    url: https://github.com/ament/ament_package.git
+    version: 0.4.0
+  ament/ament_cmake:
+    type: git
+    url: https://github.com/ament/ament_cmake.git
+    version: 0.4.0
+  ament/osrf_pycommon:
+    type: git
+    url: https://github.com/osrf/osrf_pycommon.git
+    version: 0.1.4
+  ament/ament_cmake_ros:
+    type: git
+    url: https://github.com/ros2/ament_cmake_ros.git
+    version: 0.4.0
+
+  ros2/rosidl:
+    type: git
+    url: https://github.com/ros2/rosidl.git
+    version: 0.4.0
+  ros2/rcl_interfaces:
+    type: git
+    url: https://github.com/ros2/rcl_interfaces.git
+    version: 0.4.0
+  ros2/rcl:
+    type: git
+    url: https://github.com/ros2/rcl.git
+    version: 0.4.0
+  ros2/rmw:
+    type: git
+    url: https://github.com/ros2/rmw.git
+    version: 0.4.0
+  ros2/common_interfaces:
+    type: git
+    url: https://github.com/ros2/common_interfaces.git
+    version: 0.4.0
+
+  ros2/rosidl_typesupport:
+    type: git
+    url: https://github.com/astralien3000/rosidl_typesupport.git
+    version: riot
+  ros2/rmw_implementation:
+    type: git
+    url: https://github.com/astralien3000/rmw_implementation.git
+    version: riot
+  ros2/rcutils:
+    type: git
+    url: https://github.com/astralien3000/rcutils.git
+    version: riot
+  ros2/rclc:
+    type: git
+    url: https://github.com/astralien3000/rclc.git
+    version: master
+  ros2/rmw_ndn:
+    type: git
+    url: https://github.com/astralien3000/rmw_ndn_riot.git
+    version: master
+  riot-ros2:
+    type: git
+    url: https://github.com/astralien3000/riot-ros2.git
+    version: master
