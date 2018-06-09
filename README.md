@@ -1,6 +1,7 @@
 # RIOT-ROS2
 
-This project enables ROS2 to run on microcontrollers using the RIOT Operating System.
+This project enables ROS2 to run on microcontrollers using the RIOT Operating System and the NDN protocol.
+More information about the [design](https://github.com/astralien3000/riot-ros2/wiki/Design) of this project is available in the [wiki](https://github.com/astralien3000/riot-ros2/wiki).
 
 # Package support
 
@@ -11,16 +12,14 @@ Here is a summary of the main difference between the ROS2 stack and the RIOT-ROS
 |-|-|-|-|
 | ROS Client Library bindings | rclc   | no [(open PR)](https://github.com/ros2/rclc/pull/8) | yes |
 |                             | rclcpp | yes | no |
-|                             | rclpy  | yes | no |
 | ROS Client Library | rcl | yes | yes |
 | ROS MiddleWare | rmw_fastrtps | yes | no |
 |                | rmw_ndn      | no | yes |
-| ROS IDL Generators | rosidl_generator_c   | yes | yes |
-|                    | rosidl_generator_cpp | yes | no  |
-|                    | rosidl_generator_py  | yes | no  |
-| ROS IDL Type Support | rosidl_typesupport_introspection_c   | yes | no  |
-|                      | rosidl_typesupport_introspection_cpp | yes | no  |
-|                      | rosidl_typesupport_cbor              | no  | yes |
+| ROS IDL Generators | generator_c   | yes | yes |
+|                    | generator_cpp | yes | no  |
+| ROS IDL Type Support | introspection_c   | yes | no  |
+|                      | introspection_cpp | yes | no  |
+|                      | cbor              | no  | yes |
 | ROS IDL Interfaces | common_interfaces | yes | yes |
 |                    | rcl_interfaces    | yes | yes, excepted test_msgs |
 
@@ -84,35 +83,15 @@ Please, follow the requirements for [ros2 official installation instructions](ht
 ```sh
 mkdir -p ~/ros2_riot_ws/src
 cd ~/ros2_riot_ws
-wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2.repos
+wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/ros2.repos
 wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/ament2riot.cmake
-vcs import src < riot-ros2.repos
+vcs import src < ros2.repos
 ```
 
 Some downloaded package are not supported, you may run these commands to disable them : 
 
 ```sh
 touch src/ros2/rcl_interfaces/test_msgs/AMENT_IGNORE
-```
-
-## Get the tools
-
-`riot-ros2` is meant for cross-compilation.
-But some ROS2 tools need to be compiled for your current architecture.
-
-```sh
-mkdir -p ~/ros2_riot_ws/tools/src
-cd ~/ros2_riot_ws/tools
-wget https://raw.githubusercontent.com/astralien3000/riot-ros2/master/riot-ros2-tools.repos
-vcs import src < riot-ros2-tools.repos
-./src/ament/ament_tools/scripts/ament.py build --symlink-install
-```
-
-Once built, you can run this command to use `ament` and other ROS2 tools.
-(This is only needed for the first build)
-
-```sh
-. ~/ros2_riot_ws/tools/install/setup.bash
 ```
 
 ## Two build phase
@@ -123,7 +102,7 @@ First phase :
 
 ```sh
 cd ~/ros2_riot_ws
-ament build --symlink-install --force-cmake-configure --cmake-args -DCMAKE_TOOLCHAIN_FILE=`pwd`/ament2riot.cmake
+./src/ament/ament_tools/scripts/ament.py build --symlink-install --cmake-args -DCMAKE_TOOLCHAIN_FILE=`pwd`/ament2riot.cmake
 ```
 
 After that, you can go to the second build phase.
