@@ -16,6 +16,8 @@
 #define ENABLE_DEBUG 0
 #include <debug.h>
 
+#include "ros2_log.h"
+
 #define MAX_TIMEOUT (2000000) // 2s,   in us
 #define MIN_TIMEOUT (  10000) // 10ms, in us
 
@@ -84,6 +86,7 @@ void app_destroy(void) {
 }
 
 static void _send_topic_sync_ndn_interest(const char* topic, unsigned int timeout) {
+  ros2_log_add_event(RMW_SEND_INTEREST_SYNC_BEGIN);
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/sync/%lu", topic, random_uint32());
   DEBUG("Send interest %s\n", uri);
@@ -95,14 +98,17 @@ static void _send_topic_sync_ndn_interest(const char* topic, unsigned int timeou
   }
 
   uint32_t lifetime = timeout/1000;  // ms
+  ros2_log_add_event(RMW_NDN_APP_EXPRESS_SYNC_INTEREST);
   ndn_app_express_interest(_instance._app, &sin->block, NULL, lifetime,
                            _on_data, NULL);
   ndn_shared_block_release(sin);
+  ros2_log_add_event(RMW_SEND_INTEREST_SYNC_END);
 }
 
 static char buff[] = {'a', 0};
 
 static void _send_topic_data_ndn_data(const char* topic, unsigned int seq, const char* data, size_t size) {
+  ros2_log_add_event(RMW_SEND_NDNDATA_DATA_BEGIN);
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
   DEBUG("send_data(%u, %s, %u)\n", seq, data, (unsigned int)size);
@@ -117,10 +123,12 @@ static void _send_topic_data_ndn_data(const char* topic, unsigned int seq, const
 
   ndn_block_t content = { (const uint8_t*)data, (int)(size) };
 
+  ros2_log_add_event(RMW_NDN_DATA_CREATE_BEFORE);
   ndn_shared_block_t* sd =
       ndn_data_create(&sdn->block, &meta, &content,
                       NDN_SIG_TYPE_HMAC_SHA256, NULL,
                       ecc_key_pri, sizeof(ecc_key_pri));
+  ros2_log_add_event(RMW_NDN_DATA_CREATE_AFTER);
   if (sd == NULL) {
     DEBUG("ERROR : ndn_data_create\n");
     return;
@@ -129,10 +137,12 @@ static void _send_topic_data_ndn_data(const char* topic, unsigned int seq, const
   ndn_shared_block_release(sdn);
 
   // pass ownership of "sd" to the API
+  ros2_log_add_event(RMW_NDN_APP_PUT_DATA_DATA);
   if (ndn_app_put_data(_instance._app, sd) != 0) {
     DEBUG("ERROR : ndn_app_put_data\n");
     return;
   }
+  ros2_log_add_event(RMW_SEND_NDNDATA_DATA_END);
 }
 
 static int _send_if_interest(clist_node_t * clist_node, void * arg) {
@@ -170,6 +180,7 @@ void app_update(void) {
 }
 
 static void _send_topic_data_ndn_interest(const char* topic, unsigned int seq, unsigned int window, unsigned int timeout) {
+  ros2_log_add_event(RMW_SEND_INTEREST_DATA_BEGIN);
   char uri[32] = {0};
   snprintf(uri, sizeof(uri), "%s/%u", topic, seq);
   DEBUG("Send interest %s\n", uri);
@@ -181,9 +192,11 @@ static void _send_topic_data_ndn_interest(const char* topic, unsigned int seq, u
   }
 
   uint32_t lifetime = timeout/1000;  // ms
+  ros2_log_add_event(RMW_NDN_APP_EXPRESS_DATA_INTEREST);
   ndn_app_express_interest(_instance._app, &sin->block, NULL, lifetime,
                            _on_data, NULL);
   ndn_shared_block_release(sin);
+  ros2_log_add_event(RMW_SEND_INTEREST_DATA_END);
 }
 
 static void _sub_push_data(sub_t* sub, unsigned int seq, const char* data, size_t size) {
@@ -215,6 +228,7 @@ static void _sub_push_data(sub_t* sub, unsigned int seq, const char* data, size_
 }
 
 int _on_data(ndn_block_t* interest, ndn_block_t* data) {
+  ros2_log_add_event(RMW_RECV_NDNDATA_DATA_BEGIN);
   ndn_block_t name;
   int r = ndn_data_get_name(data, &name);
   if(r != 0) {
@@ -257,10 +271,12 @@ int _on_data(ndn_block_t* interest, ndn_block_t* data) {
     ndn_shared_block_release(sin);
   }
 
+  ros2_log_add_event(RMW_RECV_NDNDATA_DATA_END);
   return NDN_APP_CONTINUE;
 }
 
 static int _send_topic_sync_ndn_data(ndn_block_t name, unsigned int seq, const char* data, size_t size) {
+  ros2_log_add_event(RMW_SEND_NDNDATA_SYNC_BEGIN);
   DEBUG("send_sync(%u, %s, %u)\n", seq, data, (unsigned int)size);
 
   char strseq[32] = {0};
@@ -276,10 +292,12 @@ static int _send_topic_sync_ndn_data(ndn_block_t name, unsigned int seq, const c
 
   ndn_block_t content = { (const uint8_t*)data, (int)(size) };
 
+  ros2_log_add_event(RMW_NDN_DATA_CREATE_BEFORE);
   ndn_shared_block_t* sd =
       ndn_data_create(&sdn->block, &meta, &content,
                       NDN_SIG_TYPE_HMAC_SHA256, NULL,
                       ecc_key_pri, sizeof(ecc_key_pri));
+  ros2_log_add_event(RMW_NDN_DATA_CREATE_AFTER);
 
   if (sd == NULL) {
     ndn_shared_block_release(sdn);
@@ -290,11 +308,13 @@ static int _send_topic_sync_ndn_data(ndn_block_t name, unsigned int seq, const c
   ndn_shared_block_release(sdn);
 
   // pass ownership of "sd" to the API
+  ros2_log_add_event(RMW_NDN_APP_PUT_SYNC_DATA);
   if (ndn_app_put_data(_instance._app, sd) != 0) {
     DEBUG("ERROR\n");
     return NDN_APP_ERROR;
   }
 
+  ros2_log_add_event(RMW_SEND_NDNDATA_SYNC_END);
   return NDN_APP_CONTINUE;
 }
 
@@ -323,6 +343,7 @@ static void _pub_update_req_seq(pub_t* pub, unsigned int seq) {
 
 static int _on_interest(ndn_block_t* interest)
 {
+  ros2_log_add_event(RMW_RECV_INTEREST_BEGIN);
   ndn_block_t name;
   if (ndn_interest_get_name(interest, &name) != 0) {
     return NDN_APP_ERROR;
@@ -349,6 +370,7 @@ static int _on_interest(ndn_block_t* interest)
       ndn_name_component_t comp;
       ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&sin->block), &comp);
       if(strncmp("sync", (const char*)comp.buf, strlen("sync")) == 0) {
+        ros2_log_add_event(RMW_RECV_INTEREST_SYNC);
         DEBUG("SYNC\n");
         unsigned int seq = 0;
         const char* data = NULL;
@@ -359,6 +381,7 @@ static int _on_interest(ndn_block_t* interest)
         }
       }
       else {
+        ros2_log_add_event(RMW_RECV_INTEREST_DATA);
         DEBUG("DATA\n");
         ndn_name_component_t comp;
         ndn_name_get_component_from_block(&name, ndn_name_get_size_from_block(&name)-1, &comp);
@@ -370,5 +393,6 @@ static int _on_interest(ndn_block_t* interest)
     ndn_shared_block_release(sin);
   }
 
+  ros2_log_add_event(RMW_RECV_INTEREST_END);
   return NDN_APP_CONTINUE;
 }
