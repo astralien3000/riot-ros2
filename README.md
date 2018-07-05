@@ -49,6 +49,12 @@ sudo apt install cmake git python3-pip python3-empy g++-multilib
 pip3 install vcstool
 ```
 
+If pyparsing is not installed :
+
+```bash
+pip3 install pyparsing
+```
+
 If your arm-none-eabi-gcc is too old (< gcc 5) : 
 
 ```bash
